@@ -1,4 +1,4 @@
-use bevy::{prelude::*, DefaultPlugins};
+use bevy::prelude::*;
 
 use crate::{despawn_all, AppState};
 

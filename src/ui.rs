@@ -1,5 +1,3 @@
-use std::thread::current;
-
 use bevy::prelude::*;
 use bevy_inspector_egui::{bevy_egui::*, egui};
 
@@ -7,7 +5,6 @@ use crate::AppState;
 
 pub(crate) fn scene_changer_ui(
     mut egui_contexts: EguiContexts,
-    mut commands: Commands,
     current_state: Res<State<AppState>>,
     mut next_state: ResMut<NextState<AppState>>,
 ) {

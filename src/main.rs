@@ -1,7 +1,7 @@
 mod charles_1;
 mod ui;
 
-use bevy::{prelude::*, sprite::*};
+use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use charles_1::Charles1Plugin;
 use ui::scene_changer_ui;
