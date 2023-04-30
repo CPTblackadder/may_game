@@ -79,6 +79,7 @@ fn take_user_input(keyboard_input: Res<Input<KeyCode>>, mut velocities: Query<&m
             [KeyCode::S, KeyCode::Down].into(),
         )
         .unwrap_or(vel.value.y);
+        vel.value *= 2;
     }
 }
 
