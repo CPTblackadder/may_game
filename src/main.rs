@@ -49,14 +49,14 @@ fn process_userinput(
     let speed = 3.0;
     let mut val = None;
     for pos_key in pos_codes.iter() {
-        if key_code.just_released(*pos_key) {
+        if key_code.just_released(*pos_key) && !key_code.any_pressed(neg_codes.clone()) {
             return Some(0.0);
         } else if key_code.just_pressed(*pos_key) {
             val = Some(speed);
         }
     }
     for neg_key in neg_codes.iter() {
-        if key_code.just_released(*neg_key) {
+        if key_code.just_released(*neg_key) && !key_code.any_pressed(pos_codes.clone()) {
             return Some(0.0);
         } else if key_code.just_pressed(*neg_key) {
             val = Some(-speed);
