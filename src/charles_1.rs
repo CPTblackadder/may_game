@@ -9,12 +9,28 @@ fn load_charles_1(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
+    let texture_handle: Handle<Image> = asset_server.load("charles_1.png");
+
+    // king
+    commands.spawn((
+        SpriteBundle {
+            texture: texture_handle.clone(),
+
+            ..Default::default()
+        },
+        Velocity {
+            value: Vec2::new(0.0, 0.0),
+        },
+    ));
+
     // Circle
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(50.).into()).into(),
             material: materials.add(ColorMaterial::from(make_colour(CIRCLE_COLOUR))),
+
             transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
             ..default()
         },
@@ -76,7 +92,7 @@ fn take_user_input(keyboard_input: Res<Input<KeyCode>>, mut velocities: Query<&m
     }
 }
 
-fn move_circle(mut transforms: Query<(&mut Transform, &Velocity), With<Circle>>) {
+fn move_circle(mut transforms: Query<(&mut Transform, &Velocity)>) {
     for (mut trans, vel) in transforms.iter_mut() {
         trans.translation += vel.value.extend(0.0);
     }
