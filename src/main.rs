@@ -22,7 +22,7 @@ fn setup(
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(50.).into()).into(),
-            material: materials.add(ColorMaterial::from(Color::PURPLE)),
+            material: materials.add(ColorMaterial::from(Color::FUCHSIA)),
             transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
             ..default()
         },
