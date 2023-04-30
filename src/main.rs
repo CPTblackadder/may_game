@@ -2,7 +2,7 @@ use bevy::{prelude::*, sprite::*};
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(Color::rgb(0.0, 0.3, 0.7)))
+        .insert_resource(ClearColor(make_colour(BACKGROUND_COLOUR)))
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_system(take_user_input)
@@ -22,7 +22,7 @@ fn setup(
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: meshes.add(shape::Circle::new(50.).into()).into(),
-            material: materials.add(ColorMaterial::from(Color::FUCHSIA)),
+            material: materials.add(ColorMaterial::from(make_colour(CIRCLE_COLOUR))),
             transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
             ..default()
         },
@@ -96,3 +96,12 @@ fn grow_circle(mut transforms: Query<&mut Transform, With<Circle>>) {
         trans.scale += Vec3::new(0.005, 0.005, 0.0);
     });
 }
+
+// Colours are specified as CSS-style hex strings so that we can use VSCode's colour picker.
+// This requires downloading the `AntiAntiSepticeye.vscode-color-picker` extension,
+// and adding `"vscode-color-picker.languages": ["rust"]` to `settings.json`.
+fn make_colour(s: &str) -> Color {
+    return Color::hex(s).unwrap_or(Color::BLACK);
+}
+const BACKGROUND_COLOUR: &str = "##004db3";
+const CIRCLE_COLOUR: &str = "#FF00FF";
