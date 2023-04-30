@@ -2,6 +2,7 @@ use bevy::{prelude::*, sprite::*};
 
 fn main() {
     App::new()
+        .insert_resource(ClearColor(Color::rgb(0.9, 0.3, 0.6)))
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_system(take_user_input)
