@@ -2,7 +2,7 @@ use bevy::{prelude::*, sprite::*};
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(Color::rgb(0.9, 0.3, 0.6)))
+        .insert_resource(ClearColor(Color::rgb(0.0, 0.3, 0.7)))
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_system(take_user_input)
@@ -46,19 +46,20 @@ fn process_userinput(
     pos_codes: Vec<KeyCode>,
     neg_codes: Vec<KeyCode>,
 ) -> Option<f32> {
+    let speed = 3.0;
     let mut val = None;
     for pos_key in pos_codes.iter() {
         if key_code.just_released(*pos_key) {
             return Some(0.0);
         } else if key_code.just_pressed(*pos_key) {
-            val = Some(1.0);
+            val = Some(speed);
         }
     }
     for neg_key in neg_codes.iter() {
         if key_code.just_released(*neg_key) {
             return Some(0.0);
         } else if key_code.just_pressed(*neg_key) {
-            val = Some(-1.0);
+            val = Some(-speed);
         }
     }
 
@@ -79,7 +80,7 @@ fn take_user_input(keyboard_input: Res<Input<KeyCode>>, mut velocities: Query<&m
             [KeyCode::S, KeyCode::Down].into(),
         )
         .unwrap_or(vel.value.y);
-        vel.value *= 2;
+        vel.value;
     }
 }
 
