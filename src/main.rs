@@ -86,7 +86,6 @@ fn take_user_input(keyboard_input: Res<Input<KeyCode>>, mut velocities: Query<&m
 
 fn move_circle(mut transforms: Query<(&mut Transform, &Velocity), With<Circle>>) {
     for (mut trans, vel) in transforms.iter_mut() {
-        println!("Translate by {}", vel.value);
         trans.translation += vel.value.extend(0.0);
     }
 }
