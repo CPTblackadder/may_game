@@ -103,5 +103,5 @@ fn grow_circle(mut transforms: Query<&mut Transform, With<Circle>>) {
 fn make_colour(s: &str) -> Color {
     return Color::hex(s).unwrap_or(Color::BLACK);
 }
-const BACKGROUND_COLOUR: &str = "##004db3";
+const BACKGROUND_COLOUR: &str = "#004DB3";
 const CIRCLE_COLOUR: &str = "#FF00FF";
