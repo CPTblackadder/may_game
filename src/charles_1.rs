@@ -35,7 +35,7 @@ impl Velocity {
     }
 
     fn is_left(&self) -> bool {
-        return self.value.x < 0.0;
+        return self.value.x <= 0.0;
     }
 }
 

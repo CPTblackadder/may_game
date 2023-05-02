@@ -13,11 +13,12 @@ impl Plugin for Charles1 {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 struct Charles1WobbleJoint {
     max: f32,
     min: f32,
     current_position: f32,
+    acceleration: f32,
     velocity: f32,
     direction_positive: bool,
 }
@@ -27,7 +28,8 @@ struct Charles1Arm;
 
 pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>) {
     let texture_handle_arm: Handle<Image> = asset_server.load("charles_1_arm.png");
-    let texture_handle_top: Handle<Image> = asset_server.load("charles_1_top.png");
+    let texture_handle_torso: Handle<Image> = asset_server.load("charles_1_torso.png");
+    let texture_handle_head: Handle<Image> = asset_server.load("charles_1_head.png");
     let texture_handle_bottom: Handle<Image> = asset_server.load("charles_1_bottom.png");
 
     let wobble_point_top = commands
@@ -35,9 +37,9 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
             Charles1WobbleJoint {
                 max: 0.1,
                 min: -0.1,
-                current_position: 0.0,
-                velocity: 0.0,
                 direction_positive: true,
+                acceleration: 0.01,
+                ..Default::default()
             },
             SpatialBundle {
                 transform: Transform::from_xyz(-18.0, -180.0, 0.0),
@@ -45,12 +47,35 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
             },
         ))
         .with_children(|parent| {
-            parent.spawn((SpriteBundle {
-                texture: texture_handle_top.clone(),
-                transform: Transform::from_xyz(68.0, 200.0, 0.0),
-
-                ..Default::default()
-            },));
+            parent
+                .spawn((SpriteBundle {
+                    texture: texture_handle_torso.clone(),
+                    transform: Transform::from_xyz(68.0, 123.0, 0.0),
+                    ..Default::default()
+                },))
+                .with_children(|parent| {
+                    parent
+                        .spawn((
+                            Charles1WobbleJoint {
+                                max: 0.05,
+                                min: -0.05,
+                                direction_positive: true,
+                                acceleration: 0.003,
+                                ..Default::default()
+                            },
+                            SpatialBundle {
+                                transform: Transform::from_xyz(7.0, 58.0, 0.0),
+                                ..Default::default()
+                            },
+                        ))
+                        .with_children(|parent| {
+                            parent.spawn((SpriteBundle {
+                                texture: texture_handle_head.clone(),
+                                transform: Transform::from_xyz(-40.0, 250.0, 0.0),
+                                ..Default::default()
+                            },));
+                        });
+                });
             parent
                 .spawn((
                     Charles1Arm,
@@ -74,9 +99,8 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
             Charles1WobbleJoint {
                 max: 0.2,
                 min: -0.2,
-                current_position: 0.0,
-                velocity: 0.0,
-                direction_positive: false,
+                acceleration: 0.01,
+                ..Default::default()
             },
             SpatialBundle {
                 transform: Transform::from_xyz(-18.0, -180.0, -0.1),
