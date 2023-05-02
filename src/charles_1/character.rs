@@ -73,16 +73,19 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
 fn raise_charles_1_arm(
     keys: Res<Input<KeyCode>>,
     mut arms: Query<&mut Transform, With<Charles1Arm>>,
+    timer: Res<Time>,
 ) {
     for mut arm in arms.iter_mut() {
-        let mut rot = arm.rotation.z;
+        let old_angle = arm.rotation.to_euler(EulerRot::XYZ).2;
+        let new_angle;
         if keys.pressed(KeyCode::R) {
-            rot -= 0.05;
+            new_angle = old_angle - (1.0 * timer.delta_seconds());
         } else {
-            rot += 0.15;
+            new_angle = old_angle + (3.0 * timer.delta_seconds());
         }
-        rot = rot.clamp(-2.0, 0.0);
-        println!("{}", rot);
-        arm.rotation.z = rot;
+
+        arm.rotation = Quat::from_rotation_z(new_angle.clamp(-2.0, 0.0));
+
+        println!("{}", arm.rotation);
     }
 }

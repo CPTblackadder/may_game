@@ -36,7 +36,7 @@ where
 
 #[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
 enum AppState {
-    #[default]
     MainMenu,
+    #[default]
     Charles1,
 }
