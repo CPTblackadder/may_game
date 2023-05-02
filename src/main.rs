@@ -1,8 +1,9 @@
 mod charles_1;
+mod cursor_position;
 mod ui;
 
 use bevy::prelude::*;
-use bevy_inspector_egui::bevy_egui::EguiPlugin;
+use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use charles_1::Charles1Plugin;
 use ui::scene_changer_ui;
 
@@ -13,8 +14,10 @@ fn main() {
         .add_plugin(Charles1Plugin)
         .add_plugin(EguiPlugin)
         .add_plugin(bevy_inspector_egui::DefaultInspectorConfigPlugin) // adds default options and `InspectorEguiImpl`s
+        .add_plugin(WorldInspectorPlugin::new())
         .add_startup_system(common_start_up)
         .add_system(scene_changer_ui)
+        .add_system(cursor_position::cursor_position)
         .run();
 }
 

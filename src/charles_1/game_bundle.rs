@@ -2,11 +2,12 @@ use bevy::prelude::*;
 
 use crate::{despawn_all, AppState};
 
-use super::*;
+use super::{character::Charles1, *};
 
 impl Plugin for Charles1Plugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.insert_resource(ClearColor(make_colour(BACKGROUND_COLOUR)))
+        app.add_plugin(Charles1)
+            .insert_resource(ClearColor(make_colour(BACKGROUND_COLOUR)))
             .add_system(load_charles_1.in_schedule(OnEnter(AppState::Charles1)))
             .add_system(despawn_all::<Circle>.in_schedule(OnExit(AppState::Charles1)))
             .add_systems(
