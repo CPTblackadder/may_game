@@ -85,7 +85,5 @@ fn raise_charles_1_arm(
         }
 
         arm.rotation = Quat::from_rotation_z(new_angle.clamp(-2.0, 0.0));
-
-        println!("{}", arm.rotation);
     }
 }
