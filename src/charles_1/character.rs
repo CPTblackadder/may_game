@@ -145,21 +145,22 @@ fn charles_1_movement(
             }
             wobbler.velocity *= 0.8;
 
-            // println!("{}, {}", wobbler.direction_positive, wobbler.velocity);
-
             wobbler.current_position += (if wobbler.direction_positive {
                 1.0
             } else {
                 -1.0
             }) * wobbler.velocity;
             if wobbler.current_position > wobbler.max {
-                println!("Hit max");
                 wobbler.direction_positive = !wobbler.direction_positive;
                 wobbler.current_position = wobbler.max;
             } else if wobbler.current_position < wobbler.min {
-                println!("Hit min");
                 wobbler.direction_positive = !wobbler.direction_positive;
                 wobbler.current_position = wobbler.min;
+            }
+
+            if wobbler.velocity < 0.001 {
+                // Reset towards 0
+                wobbler.current_position *= 0.9;
             }
 
             w_trans.rotation = Quat::from_rotation_z(wobbler.current_position);
