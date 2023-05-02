@@ -33,6 +33,10 @@ impl Velocity {
             value: Vec2 { x: 0.0, y: 0.0 },
         }
     }
+
+    fn is_left(&self) -> bool {
+        return self.value.x < 0.0;
+    }
 }
 
 fn process_userinput(
@@ -81,6 +85,11 @@ fn take_user_input(keyboard_input: Res<Input<KeyCode>>, mut velocities: Query<&m
 fn move_circle(mut transforms: Query<(&mut Transform, &Velocity)>) {
     for (mut trans, vel) in transforms.iter_mut() {
         trans.translation += vel.value.extend(0.0);
+        if !vel.is_left() {
+            trans.rotation = Quat::from_rotation_y(std::f32::consts::PI);
+        } else {
+            trans.rotation = Quat::default();
+        }
     }
 }
 
