@@ -2,6 +2,7 @@ use bevy::{prelude::*, sprite::*};
 
 mod character;
 mod game_bundle;
+mod peasant;
 
 pub struct Charles1Plugin;
 
