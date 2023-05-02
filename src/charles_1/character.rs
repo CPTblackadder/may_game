@@ -14,7 +14,7 @@ impl Plugin for Charles1 {
 }
 
 #[derive(Component)]
-pub struct Charles1WobbleJoint {
+struct Charles1WobbleJoint {
     max: f32,
     min: f32,
     current_position: f32,
