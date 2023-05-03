@@ -17,6 +17,7 @@ fn load_charles_1(
     asset_server: Res<AssetServer>,
 ) {
     let grass_image = asset_server.load("grass.png");
+    
     commands.spawn(
         BackgroundImageBundle::from_image(grass_image, back_materials.as_mut(), meshes.as_mut())
             .at_z_layer(0.1),

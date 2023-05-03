@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::layer::ZLayer;
+
 use super::Velocity;
 
 #[derive(Component)]
@@ -48,11 +50,14 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
         ))
         .with_children(|parent| {
             parent
-                .spawn((SpriteBundle {
-                    texture: texture_handle_torso.clone(),
-                    transform: Transform::from_xyz(68.0, 123.0, 0.0),
-                    ..Default::default()
-                },))
+                .spawn((
+                    SpriteBundle {
+                        texture: texture_handle_torso.clone(),
+                        transform: Transform::from_xyz(68.0, 123.0, 0.0),
+                        ..Default::default()
+                    },
+                    ZLayer::Foreground(10),
+                ))
                 .with_children(|parent| {
                     parent
                         .spawn((
@@ -69,27 +74,33 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
                             },
                         ))
                         .with_children(|parent| {
-                            parent.spawn((SpriteBundle {
-                                texture: texture_handle_head.clone(),
-                                transform: Transform::from_xyz(-40.0, 250.0, 0.0),
-                                ..Default::default()
-                            },));
+                            parent.spawn((
+                                SpriteBundle {
+                                    texture: texture_handle_head.clone(),
+                                    transform: Transform::from_xyz(-40.0, 250.0, 0.0),
+                                    ..Default::default()
+                                },
+                                ZLayer::Foreground(11),
+                            ));
                         });
                 });
             parent
                 .spawn((
                     Charles1Arm,
                     SpatialBundle {
-                        transform: Transform::from_xyz(-42.0, 265.0, 0.1),
+                        transform: Transform::from_xyz(-42.0, 265.0, 0.0),
                         ..Default::default()
                     },
                 ))
                 .with_children(|parent| {
-                    parent.spawn((SpriteBundle {
-                        texture: texture_handle_arm.clone(),
-                        transform: Transform::from_xyz(-152.3, -177.0, 0.0),
-                        ..Default::default()
-                    },));
+                    parent.spawn((
+                        SpriteBundle {
+                            texture: texture_handle_arm.clone(),
+                            transform: Transform::from_xyz(-152.3, -177.0, 0.0),
+                            ..Default::default()
+                        },
+                        ZLayer::Foreground(11),
+                    ));
                 });
         })
         .id();
@@ -103,16 +114,19 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
                 ..Default::default()
             },
             SpatialBundle {
-                transform: Transform::from_xyz(-18.0, -180.0, -0.1),
+                transform: Transform::from_xyz(-18.0, -180.0, 0.0),
                 ..Default::default()
             },
         ))
         .with_children(|parent| {
-            parent.spawn((SpriteBundle {
-                texture: texture_handle_bottom.clone(),
-                transform: Transform::from_xyz(-44.1, -407.7, 0.0),
-                ..Default::default()
-            },));
+            parent.spawn((
+                SpriteBundle {
+                    texture: texture_handle_bottom.clone(),
+                    transform: Transform::from_xyz(-44.1, -407.7, 0.0),
+                    ..Default::default()
+                },
+                ZLayer::Foreground(9),
+            ));
         })
         .id();
 
@@ -121,7 +135,6 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
         y: 0.3,
         z: 1.0,
     });
-    charles_t.translation.z = 10.0;
 
     let charles_entity = commands
         .spawn((
