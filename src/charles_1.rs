@@ -1,4 +1,5 @@
 use bevy::{prelude::*, sprite::*};
+use bevy_tiling_background::*   ;
 
 use self::character::create_charles_1;
 
@@ -11,11 +12,15 @@ pub struct Charles1Plugin;
 fn load_charles_1(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
+    mut back_materials: ResMut<Assets<BackgroundMaterial>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
-    let texture_handle: Handle<Image> = asset_server.load("charles_1.png");
-
+    let grass_image = asset_server.load("grass.png");
+    commands.spawn(
+        BackgroundImageBundle::from_image(grass_image, back_materials.as_mut(), meshes.as_mut())
+            .at_z_layer(0.1),
+    );
     // king
     create_charles_1(&mut commands, &asset_server);
 }

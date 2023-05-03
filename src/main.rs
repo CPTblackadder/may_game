@@ -2,8 +2,12 @@ mod charles_1;
 mod cursor_position;
 mod ui;
 
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    render::render_resource::{AddressMode, SamplerDescriptor},
+};
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
+use bevy_tiling_background::*;
 use charles_1::Charles1Plugin;
 use ui::scene_changer_ui;
 
@@ -11,7 +15,15 @@ fn main() {
     App::new()
         .add_state::<AppState>()
         .insert_resource(FixedTime::new_from_secs(1.0 / 60.0))
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(ImagePlugin {
+            default_sampler: SamplerDescriptor {
+                address_mode_u: AddressMode::Repeat,
+                address_mode_v: AddressMode::Repeat,
+                address_mode_w: AddressMode::Repeat,
+                ..Default::default()
+            },
+        }))
+        .add_plugin(TilingBackgroundPlugin::<BackgroundMaterial>::default())
         .add_plugin(Charles1Plugin)
         .add_plugin(EguiPlugin)
         .add_plugin(bevy_inspector_egui::DefaultInspectorConfigPlugin) // adds default options and `InspectorEguiImpl`s

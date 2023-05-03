@@ -6,9 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = "0.10"                  # make sure this is the latest version
+bevy = "0.10"                     # make sure this is the latest version
 bevy-inspector-egui = "0.18.3"
 bevy_rapier2d = "0.21.0"
+bevy_tiling_background = "0.10.0"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
