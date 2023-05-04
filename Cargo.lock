@@ -931,15 +931,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_tiling_background"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40faf74807fec56925ad7be2b53b5604956fa52a696c724d57eaa2249b87ccc9"
-dependencies = [
- "bevy",
-]
-
-[[package]]
 name = "bevy_time"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2299,7 +2290,6 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_rapier2d",
- "bevy_tiling_background",
 ]
 
 [[package]]

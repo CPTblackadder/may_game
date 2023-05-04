@@ -5,7 +5,7 @@ use bevy::{
     sprite::MaterialMesh2dBundle,
 };
 
-use super::{wobble_joint::WobbleJoint, Velocity};
+use super::{falling_sprite::FallingSprite, wobble_joint::WobbleJoint, Shadow, Velocity};
 
 #[derive(Component)]
 struct Peasant;
@@ -15,6 +15,65 @@ enum PeasantState {
     #[default]
     Idle,
     Tracking,
+}
+
+#[derive(Component)]
+pub struct PeasantDie;
+
+pub fn destroy_peasant(
+    mut commands: Commands,
+    peasants: Query<(Entity, &Children, &Transform), With<PeasantDie>>,
+    parent_child: Query<&Children>,
+    sprites: Query<(Entity, &Handle<Image>), (With<Sprite>, Without<Shadow>)>,
+    images: Res<Assets<Image>>,
+) {
+    for (p, children, t) in peasants.iter() {
+        let floor = t.translation.y;
+        apply_falling_sprite_rec(
+            floor,
+            &mut commands,
+            children,
+            &parent_child,
+            &sprites,
+            &images,
+        );
+        // commands.entity(p).despawn_recursive();
+    }
+}
+
+fn apply_falling_sprite_rec(
+    floor: f32,
+    mut commands: &mut Commands,
+    children: &Children,
+    parent_child: &Query<&Children>,
+    sprites: &Query<(Entity, &Handle<Image>), (With<Sprite>, Without<Shadow>)>,
+    images: &Res<Assets<Image>>,
+) {
+    for child in children {
+        if let Ok(children) = parent_child.get(*child) {
+            apply_falling_sprite_rec(floor, commands, children, parent_child, sprites, images)
+        }
+        if let Ok((entity, image_handle)) = sprites.get(*child) {
+            let i = images.get(image_handle);
+            let sprite_radious = if let Some(i) = i {
+                (i.texture_descriptor.size.height as f32 + i.texture_descriptor.size.width as f32)
+                    / 2.
+            } else {
+                0.0
+            };
+
+            commands
+                .entity(entity)
+                .insert(dbg!(FallingSprite {
+                    floor,
+                    rotation_speed: 0.001,
+                    velocity: Vec2 { x: 0.5, y: 10.0 },
+                    sprite_radious,
+                }))
+                .remove_parent_in_place();
+                // .despawn_descendants();
+        }
+    }
 }
 
 pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, location: Vec2) {
@@ -31,6 +90,7 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
     let peasant_entity = commands
         .spawn((
             Peasant,
+            PeasantDie,
             Velocity::new(false),
             SpatialBundle {
                 transform: peasant_transform,
@@ -108,11 +168,14 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
         .id();
 
     let shadow_entity = commands
-        .spawn((SpriteBundle {
-            texture: shadow.clone(),
-            transform: Transform::from_xyz(0.0, 0.0, 0.0),
-            ..Default::default()
-        },))
+        .spawn((
+            SpriteBundle {
+                texture: shadow.clone(),
+                transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                ..Default::default()
+            },
+            Shadow,
+        ))
         .id();
 
     commands.entity(peasant_entity).push_children(&[

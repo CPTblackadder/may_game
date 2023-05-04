@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::{wobble_joint::WobbleJoint, Velocity};
+use super::{wobble_joint::WobbleJoint, Shadow, Velocity};
 
 #[derive(Component)]
 pub struct Charles1;
@@ -108,11 +108,14 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
         .id();
 
     let shadow_entity = commands
-        .spawn((SpriteBundle {
-            texture: shadow.clone(),
-            transform: Transform::from_xyz(-60., 0.0, 0.0),
-            ..Default::default()
-        },))
+        .spawn((
+            SpriteBundle {
+                texture: shadow.clone(),
+                transform: Transform::from_xyz(-60., 0.0, 0.0),
+                ..Default::default()
+            },
+            Shadow,
+        ))
         .id();
 
     commands.entity(charles_entity).push_children(&[

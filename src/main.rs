@@ -1,13 +1,14 @@
+mod bevy_tiling_background;
 mod charles_1;
 mod cursor_position;
 mod ui;
 
+use crate::bevy_tiling_background::*;
 use bevy::{
     prelude::*,
     render::render_resource::{AddressMode, SamplerDescriptor},
 };
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
-use bevy_tiling_background::*;
 use charles_1::Charles1Plugin;
 use ui::scene_changer_ui;
 
@@ -47,7 +48,7 @@ where
     T: Component,
 {
     for entity in query.iter() {
-        commands.entity(entity).despawn();
+        commands.entity(entity).despawn_recursive();
     }
 }
 

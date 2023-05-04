@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tiling_background::BackgroundMovementScale;
+use crate::bevy_tiling_background::BackgroundMovementScale;
 
 fn map_range(from_range: (f32, f32), to_range: (f32, f32), s: f32) -> f32 {
     to_range.0 + (s - from_range.0) * (to_range.1 - to_range.0) / (from_range.1 - from_range.0)
