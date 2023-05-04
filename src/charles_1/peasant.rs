@@ -2,6 +2,7 @@ use bevy::{
     prelude::{shape::Circle, *},
     sprite::MaterialMesh2dBundle,
 };
+use bevy_rapier2d::prelude::*;
 use rand::{rngs::ThreadRng, Rng};
 use std::{default, f32::consts::PI};
 
@@ -191,7 +192,9 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
                 ..Default::default()
             },
             Shadow,
+            Collider::ball(151.),
         ))
+        .insert(Sensor)
         .id();
 
     commands.entity(peasant_entity).push_children(&[

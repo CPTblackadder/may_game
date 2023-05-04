@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 
 use super::{wobble_joint::WobbleJoint, Shadow, Velocity};
 
@@ -116,7 +117,9 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
                 ..Default::default()
             },
             Shadow,
+            Collider::ball(151.0),
         ))
+        .insert(Sensor)
         .id();
 
     commands.entity(charles_entity).push_children(&[

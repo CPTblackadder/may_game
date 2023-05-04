@@ -9,6 +9,10 @@ use bevy::{
     render::render_resource::{AddressMode, SamplerDescriptor},
 };
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
+use bevy_rapier2d::{
+    prelude::{NoUserData, RapierPhysicsPlugin},
+    render::RapierDebugRenderPlugin,
+};
 use charles_1::Charles1Plugin;
 use ui::scene_changer_ui;
 
@@ -36,6 +40,8 @@ fn main() {
         .add_system(scene_changer_ui)
         .add_startup_system(common_start_up)
         .add_system(cursor_position::cursor_position)
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugin(RapierDebugRenderPlugin::default())
         .run();
 }
 
