@@ -97,7 +97,7 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
 
     let wobble_point_bottom = commands
         .spawn((
-            WobbleJoint::new(charles_entity, 0.2, -0.2, 0.1, false),
+            WobbleJoint::new(charles_entity, 0.2, -0.2, 0.01, false),
             SpatialBundle {
                 transform: Transform::from_xyz(-18.0, -180.0, 0.0),
                 ..Default::default()
