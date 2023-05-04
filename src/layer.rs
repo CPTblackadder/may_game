@@ -13,7 +13,6 @@ pub fn update_z_coordinate_based_on_layer(
     >,
 ) {
     for (mut transform, g_transform, layer) in query.iter_mut() {
-        println!("{}", g_transform.forward());
         transform.translation.z = match *layer {
             ZLayer::Background(order_in_layer) => {
                 -g_transform.forward().z * 5.0 + order_in_layer as f32 / 1000.

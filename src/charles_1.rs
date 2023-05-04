@@ -1,11 +1,12 @@
 use bevy::{prelude::*, sprite::*};
-use bevy_tiling_background::*   ;
+use bevy_tiling_background::*;
 
-use self::character::create_charles_1;
+use self::{character::create_charles_1, peasant::spawn_peasant};
 
 mod character;
 mod game_bundle;
 mod peasant;
+mod wobble_joint;
 
 pub struct Charles1Plugin;
 
@@ -17,13 +18,15 @@ fn load_charles_1(
     asset_server: Res<AssetServer>,
 ) {
     let grass_image = asset_server.load("grass.png");
-    
+
     commands.spawn(
         BackgroundImageBundle::from_image(grass_image, back_materials.as_mut(), meshes.as_mut())
             .at_z_layer(0.1),
     );
     // king
-    create_charles_1(&mut commands, &asset_server);
+    // create_charles_1(&mut commands, &asset_server);
+
+    spawn_peasant(&mut commands, &asset_server, Vec2::new(100.0, 100.0));
 }
 
 #[derive(Component)]
