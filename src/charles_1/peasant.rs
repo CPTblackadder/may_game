@@ -1,14 +1,14 @@
-use std::{default, f32::consts::PI};
-
 use bevy::{
     prelude::{shape::Circle, *},
     sprite::MaterialMesh2dBundle,
 };
+use rand::{rngs::ThreadRng, Rng};
+use std::{default, f32::consts::PI};
 
 use super::{falling_sprite::FallingSprite, wobble_joint::WobbleJoint, Shadow, Velocity};
 
 #[derive(Component)]
-struct Peasant;
+pub struct Peasant;
 
 #[derive(Default)]
 enum PeasantState {
@@ -18,6 +18,7 @@ enum PeasantState {
 }
 
 #[derive(Component)]
+#[component(storage = "SparseSet")]
 pub struct PeasantDie;
 
 pub fn destroy_peasant(
@@ -27,6 +28,7 @@ pub fn destroy_peasant(
     sprites: Query<(Entity, &Handle<Image>), (With<Sprite>, Without<Shadow>)>,
     images: Res<Assets<Image>>,
 ) {
+    let mut rng = rand::thread_rng();
     for (p, children, t) in peasants.iter() {
         let floor = t.translation.y;
         apply_falling_sprite_rec(
@@ -36,8 +38,9 @@ pub fn destroy_peasant(
             &parent_child,
             &sprites,
             &images,
+            &mut rng,
         );
-        // commands.entity(p).despawn_recursive();
+        commands.entity(p).despawn_recursive();
     }
 }
 
@@ -48,10 +51,19 @@ fn apply_falling_sprite_rec(
     parent_child: &Query<&Children>,
     sprites: &Query<(Entity, &Handle<Image>), (With<Sprite>, Without<Shadow>)>,
     images: &Res<Assets<Image>>,
+    mut rng: &mut ThreadRng,
 ) {
     for child in children {
         if let Ok(children) = parent_child.get(*child) {
-            apply_falling_sprite_rec(floor, commands, children, parent_child, sprites, images)
+            apply_falling_sprite_rec(
+                floor,
+                commands,
+                children,
+                parent_child,
+                sprites,
+                images,
+                rng,
+            );
         }
         if let Ok((entity, image_handle)) = sprites.get(*child) {
             let i = images.get(image_handle);
@@ -64,14 +76,19 @@ fn apply_falling_sprite_rec(
 
             commands
                 .entity(entity)
-                .insert(dbg!(FallingSprite {
-                    floor,
-                    rotation_speed: 0.001,
-                    velocity: Vec2 { x: 0.5, y: 10.0 },
-                    sprite_radious,
-                }))
-                .remove_parent_in_place();
-                // .despawn_descendants();
+                .insert((
+                    FallingSprite {
+                        floor,
+                        rotation_speed: rng.gen_range(-0.05..0.05),
+                        velocity: Vec2 {
+                            x: rng.gen_range(-1.3..1.4),
+                            y: rng.gen_range(0.7..2.5),
+                        },
+                    },
+                    crate::DeleteOnSceneChange,
+                ))
+                .remove_parent_in_place()
+                .despawn_descendants();
         }
     }
 }
@@ -90,7 +107,6 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
     let peasant_entity = commands
         .spawn((
             Peasant,
-            PeasantDie,
             Velocity::new(false),
             SpatialBundle {
                 transform: peasant_transform,
@@ -186,3 +202,15 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
 }
 
 // Peasants stand around, when charles enters their cone of vision they give chase until charles is lost
+
+pub fn kill_all_peasants(
+    mut commands: Commands,
+    keyboard_input: Res<Input<KeyCode>>,
+    peasants: Query<Entity, With<Peasant>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Space) {
+        for p in peasants.iter() {
+            commands.entity(p).insert(PeasantDie);
+        }
+    }
+}
