@@ -5,8 +5,6 @@ use bevy::{
     sprite::MaterialMesh2dBundle,
 };
 
-use crate::layer::ZLayer;
-
 use super::{wobble_joint::WobbleJoint, Velocity};
 
 #[derive(Component)]
@@ -27,7 +25,7 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
     // Preload shocked texture
     let _texture_handle_head: Handle<Image> = asset_server.load("peasant_head_shocked.png");
 
-    let mut peasant_transform: Transform = Transform::from_translation(location.extend(0.0));
+    let mut peasant_transform: Transform = Transform::from_translation(location.extend(1.0));
     peasant_transform.scale = Vec3::new(0.3, 0.3, 1.0);
 
     let peasant_entity = commands
@@ -54,10 +52,9 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
                 .spawn((
                     SpriteBundle {
                         texture: texture_handle_body.clone(),
-                        transform: Transform::from_xyz(0.0, 250.0, 0.0),
+                        transform: Transform::from_xyz(0.0, 250.0, 0.3),
                         ..Default::default()
                     },
-                    ZLayer::Foreground(5),
                 ))
                 .with_children(|parent| {
                     parent
@@ -72,10 +69,9 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
                             parent.spawn((
                                 SpriteBundle {
                                     texture: texture_handle_head.clone(),
-                                    transform: Transform::from_xyz(0.0, 200.0, 0.0),
+                                    transform: Transform::from_xyz(0.0, 200.0, 0.1),
                                     ..Default::default()
                                 },
-                                ZLayer::Foreground(7),
                             ));
                         });
                 });
@@ -91,10 +87,9 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
                     parent.spawn((
                         SpriteBundle {
                             texture: texture_handle_legs.clone(),
-                            transform: Transform::from_xyz(0.0, -150.0, 0.0),
+                            transform: Transform::from_xyz(0.0, -150.0, 0.1),
                             ..Default::default()
                         },
-                        ZLayer::Foreground(6),
                     ));
                 });
         })
@@ -112,10 +107,9 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
             parent.spawn((
                 SpriteBundle {
                     texture: texture_handle_legs.clone(),
-                    transform: Transform::from_xyz(0.0, -150.0, 0.0),
+                    transform: Transform::from_xyz(0.0, -150.0, 0.2),
                     ..Default::default()
                 },
-                ZLayer::Foreground(4),
             ));
         })
         .id();
@@ -127,7 +121,6 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
                 transform: Transform::from_xyz(0.0, -300.0, 0.0),
                 ..Default::default()
             },
-            ZLayer::Foreground(3),
         ))
         .id();
 

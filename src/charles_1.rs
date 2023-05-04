@@ -45,6 +45,7 @@ pub struct Velocity {
     value: Vec2,
     facing: FacingDirection,
 }
+
 impl Velocity {
     fn new(can_change_facing_direction: bool) -> Velocity {
         Velocity {
@@ -52,20 +53,6 @@ impl Velocity {
             can_change_facing_direction,
             facing: FacingDirection::Left,
         }
-    }
-    fn normalize_facing_direction(&mut self) -> FacingDirection {
-        if self.can_change_facing_direction {
-            if self.value.x <= 0.0 {
-                self.facing = FacingDirection::Left;
-            } else {
-                self.facing = FacingDirection::Right
-            }
-        }
-        self.facing
-    }
-
-    fn get_facing_direction(&self) -> FacingDirection {
-        self.facing
     }
 }
 
@@ -115,10 +102,14 @@ fn take_user_input(keyboard_input: Res<Input<KeyCode>>, mut velocities: Query<&m
 fn move_with_velocity(mut transforms: Query<(&mut Transform, &mut Velocity)>) {
     for (mut trans, mut vel) in transforms.iter_mut() {
         trans.translation += vel.value.extend(0.0);
-        if vel.normalize_facing_direction() == FacingDirection::Left {
-            trans.rotation = Quat::from_rotation_y(std::f32::consts::PI);
-        } else {
-            trans.rotation = Quat::default();
+        if vel.can_change_facing_direction {
+            if vel.value.x < 0. && vel.facing == FacingDirection::Right {
+                vel.facing = FacingDirection::Left;
+                trans.scale.x = -trans.scale.x;
+            } else if vel.value.x > 0. && vel.facing == FacingDirection::Left {
+                vel.facing = FacingDirection::Right;
+                trans.scale.x = -trans.scale.x;
+            }
         }
     }
 }

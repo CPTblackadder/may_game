@@ -1,6 +1,5 @@
 mod charles_1;
 mod cursor_position;
-mod layer;
 mod ui;
 
 use bevy::{
@@ -10,7 +9,6 @@ use bevy::{
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use bevy_tiling_background::*;
 use charles_1::Charles1Plugin;
-use layer::{check_all_sprites_have_z_layer, update_z_coordinate_based_on_layer};
 use ui::scene_changer_ui;
 
 fn main() {
@@ -31,10 +29,8 @@ fn main() {
         .add_plugin(EguiPlugin)
         .add_plugin(bevy_inspector_egui::DefaultInspectorConfigPlugin) // adds default options and `InspectorEguiImpl`s
         .add_plugin(WorldInspectorPlugin::new())
-        .add_system(check_all_sprites_have_z_layer) // TODO remove for release, is debugging system
         .add_system(scene_changer_ui)
         .add_startup_system(common_start_up)
-        .add_system(update_z_coordinate_based_on_layer.in_base_set(CoreSet::PostUpdate))
         .add_system(cursor_position::cursor_position)
         .run();
 }

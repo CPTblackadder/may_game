@@ -1,7 +1,5 @@
 use bevy::prelude::*;
 
-use crate::layer::ZLayer;
-
 use super::{wobble_joint::WobbleJoint, Velocity};
 
 #[derive(Component)]
@@ -54,10 +52,9 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
                 .spawn((
                     SpriteBundle {
                         texture: texture_handle_torso.clone(),
-                        transform: Transform::from_xyz(68.0, 123.0, 0.0),
+                        transform: Transform::from_xyz(68.0, 123.0, 0.2),
                         ..Default::default()
                     },
-                    ZLayer::Foreground(10),
                 ))
                 .with_children(|parent| {
                     parent
@@ -72,10 +69,9 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
                             parent.spawn((
                                 SpriteBundle {
                                     texture: texture_handle_head.clone(),
-                                    transform: Transform::from_xyz(-40.0, 250.0, 0.0),
+                                    transform: Transform::from_xyz(-40.0, 250.0, 0.1),
                                     ..Default::default()
                                 },
-                                ZLayer::Foreground(11),
                             ));
                         });
                 });
@@ -91,10 +87,9 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
                     parent.spawn((
                         SpriteBundle {
                             texture: texture_handle_arm.clone(),
-                            transform: Transform::from_xyz(-152.3, -177.0, 0.0),
+                            transform: Transform::from_xyz(-152.3, -177.0, 0.1),
                             ..Default::default()
                         },
-                        ZLayer::Foreground(11),
                     ));
                 });
         })
@@ -112,10 +107,9 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
             parent.spawn((
                 SpriteBundle {
                     texture: texture_handle_bottom.clone(),
-                    transform: Transform::from_xyz(-44.1, -407.7, 0.0),
+                    transform: Transform::from_xyz(-44.1, -407.7, 0.2),
                     ..Default::default()
                 },
-                ZLayer::Foreground(9),
             ));
         })
         .id();
@@ -127,7 +121,6 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
                 transform: Transform::from_xyz(-60., -950.0, 0.0),
                 ..Default::default()
             },
-            ZLayer::Foreground(3),
         ))
         .id();
 
