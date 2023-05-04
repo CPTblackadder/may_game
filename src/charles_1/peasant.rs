@@ -33,7 +33,7 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
     let peasant_entity = commands
         .spawn((
             Peasant,
-            Velocity::new(),
+            Velocity::new(false),
             SpatialBundle {
                 transform: peasant_transform,
                 ..Default::default()

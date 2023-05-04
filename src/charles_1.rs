@@ -24,7 +24,7 @@ fn load_charles_1(
             .at_z_layer(0.1),
     );
     // king
-    // create_charles_1(&mut commands, &asset_server);
+    create_charles_1(&mut commands, &asset_server);
 
     spawn_peasant(&mut commands, &asset_server, Vec2::new(100.0, 100.0));
 }
@@ -32,19 +32,40 @@ fn load_charles_1(
 #[derive(Component)]
 pub struct Circle;
 
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub enum FacingDirection {
+    Left,
+    Right,
+}
+
 #[derive(Component)]
 pub struct Velocity {
-    pub value: Vec2,
+    can_change_facing_direction: bool,
+
+    value: Vec2,
+    facing: FacingDirection,
 }
 impl Velocity {
-    fn new() -> Velocity {
+    fn new(can_change_facing_direction: bool) -> Velocity {
         Velocity {
             value: Vec2 { x: 0.0, y: 0.0 },
+            can_change_facing_direction,
+            facing: FacingDirection::Left,
         }
     }
+    fn normalize_facing_direction(&mut self) -> FacingDirection {
+        if self.can_change_facing_direction {
+            if self.value.x <= 0.0 {
+                self.facing = FacingDirection::Left;
+            } else {
+                self.facing = FacingDirection::Right
+            }
+        }
+        self.facing
+    }
 
-    fn is_left(&self) -> bool {
-        return self.value.x <= 0.0;
+    fn get_facing_direction(&self) -> FacingDirection {
+        self.facing
     }
 }
 
@@ -91,21 +112,15 @@ fn take_user_input(keyboard_input: Res<Input<KeyCode>>, mut velocities: Query<&m
     }
 }
 
-fn move_circle(mut transforms: Query<(&mut Transform, &Velocity)>) {
-    for (mut trans, vel) in transforms.iter_mut() {
+fn move_with_velocity(mut transforms: Query<(&mut Transform, &mut Velocity)>) {
+    for (mut trans, mut vel) in transforms.iter_mut() {
         trans.translation += vel.value.extend(0.0);
-        if !vel.is_left() {
+        if vel.normalize_facing_direction() == FacingDirection::Left {
             trans.rotation = Quat::from_rotation_y(std::f32::consts::PI);
         } else {
             trans.rotation = Quat::default();
         }
     }
-}
-
-fn grow_circle(mut transforms: Query<&mut Transform, With<Circle>>) {
-    transforms.iter_mut().for_each(|mut trans| {
-        trans.scale += Vec3::new(0.005, 0.005, 0.0);
-    });
 }
 
 // Colours are specified as CSS-style hex strings so that we can use VSCode's colour picker.

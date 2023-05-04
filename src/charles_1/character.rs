@@ -23,16 +23,17 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
     let texture_handle_bottom: Handle<Image> = asset_server.load("charles_1_bottom.png");
     let shadow: Handle<Image> = asset_server.load("shadow.png");
 
-    let charles_t = Transform::from_scale(Vec3 {
+    let mut charles_t = Transform::from_scale(Vec3 {
         x: 0.3,
         y: 0.3,
         z: 0.0,
     });
+    charles_t.translation.z = 1.;
 
     let charles_entity = commands
         .spawn((
             Charles1,
-            Velocity::new(),
+            Velocity::new(true),
             SpatialBundle {
                 transform: charles_t,
                 ..Default::default()
@@ -123,7 +124,7 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
         .spawn((
             SpriteBundle {
                 texture: shadow.clone(),
-                transform: Transform::from_xyz(0.0, -300.0, 0.0),
+                transform: Transform::from_xyz(-60., -950.0, 0.0),
                 ..Default::default()
             },
             ZLayer::Foreground(3),
