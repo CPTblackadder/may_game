@@ -1,10 +1,14 @@
 use bevy::{prelude::*, sprite::*};
 use bevy_tiling_background::*;
 
-use self::{character::create_charles_1, peasant::spawn_peasant};
+use self::{
+    character::{create_charles_1, Charles1},
+    peasant::spawn_peasant,
+};
 
 mod character;
 mod game_bundle;
+mod normalize_z_level;
 mod peasant;
 mod wobble_joint;
 
@@ -14,15 +18,15 @@ fn load_charles_1(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut back_materials: ResMut<Assets<BackgroundMaterial>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
     let grass_image = asset_server.load("grass.png");
 
-    commands.spawn(
+    commands.spawn((
         BackgroundImageBundle::from_image(grass_image, back_materials.as_mut(), meshes.as_mut())
             .at_z_layer(0.1),
-    );
+        crate::DeleteOnSceneChange,
+    ));
     // king
     create_charles_1(&mut commands, &asset_server);
 
@@ -81,7 +85,10 @@ fn process_userinput(
     return val;
 }
 
-fn take_user_input(keyboard_input: Res<Input<KeyCode>>, mut velocities: Query<&mut Velocity>) {
+fn take_user_input(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut velocities: Query<&mut Velocity, With<Charles1>>,
+) {
     for mut vel in velocities.iter_mut() {
         vel.value.x = process_userinput(
             &*keyboard_input,

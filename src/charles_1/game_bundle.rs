@@ -12,7 +12,12 @@ impl Plugin for Charles1Plugin {
             .add_system(load_charles_1.in_schedule(OnEnter(AppState::Charles1)))
             .add_system(despawn_all::<Circle>.in_schedule(OnExit(AppState::Charles1)))
             .add_systems(
-                (take_user_input, move_with_velocity).in_set(OnUpdate(AppState::Charles1)),
+                (
+                    take_user_input,
+                    move_with_velocity,
+                    normalize_z_level::normalize_z_level,
+                )
+                    .in_set(OnUpdate(AppState::Charles1)),
             );
     }
 }

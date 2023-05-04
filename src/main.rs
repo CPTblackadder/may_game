@@ -11,6 +11,9 @@ use bevy_tiling_background::*;
 use charles_1::Charles1Plugin;
 use ui::scene_changer_ui;
 
+#[derive(Component)]
+struct DeleteOnSceneChange;
+
 fn main() {
     App::new()
         .add_state::<AppState>()

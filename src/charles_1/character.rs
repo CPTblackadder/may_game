@@ -22,11 +22,11 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
     let shadow: Handle<Image> = asset_server.load("shadow.png");
 
     let mut charles_t = Transform::from_scale(Vec3 {
-        x: 0.3,
-        y: 0.3,
+        x: 0.2,
+        y: 0.2,
         z: 0.0,
     });
-    charles_t.translation.z = 1.;
+    charles_t.translation.z = 0.;
 
     let charles_entity = commands
         .spawn((
@@ -36,6 +36,7 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
                 transform: charles_t,
                 ..Default::default()
             },
+            crate::DeleteOnSceneChange,
         ))
         .id();
 
@@ -43,19 +44,17 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
         .spawn((
             WobbleJoint::new(charles_entity, 0.1, -0.1, 0.01, true),
             SpatialBundle {
-                transform: Transform::from_xyz(-18.0, -180.0, 0.0),
+                transform: Transform::from_xyz(-18.0, -180.0 + 950.0, 0.0),
                 ..Default::default()
             },
         ))
         .with_children(|parent| {
             parent
-                .spawn((
-                    SpriteBundle {
-                        texture: texture_handle_torso.clone(),
-                        transform: Transform::from_xyz(68.0, 123.0, 0.2),
-                        ..Default::default()
-                    },
-                ))
+                .spawn((SpriteBundle {
+                    texture: texture_handle_torso.clone(),
+                    transform: Transform::from_xyz(68.0, 123.0, 0.2),
+                    ..Default::default()
+                },))
                 .with_children(|parent| {
                     parent
                         .spawn((
@@ -66,13 +65,11 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
                             },
                         ))
                         .with_children(|parent| {
-                            parent.spawn((
-                                SpriteBundle {
-                                    texture: texture_handle_head.clone(),
-                                    transform: Transform::from_xyz(-40.0, 250.0, 0.1),
-                                    ..Default::default()
-                                },
-                            ));
+                            parent.spawn((SpriteBundle {
+                                texture: texture_handle_head.clone(),
+                                transform: Transform::from_xyz(-40.0, 250.0, 0.1),
+                                ..Default::default()
+                            },));
                         });
                 });
             parent
@@ -84,13 +81,11 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
                     },
                 ))
                 .with_children(|parent| {
-                    parent.spawn((
-                        SpriteBundle {
-                            texture: texture_handle_arm.clone(),
-                            transform: Transform::from_xyz(-152.3, -177.0, 0.1),
-                            ..Default::default()
-                        },
-                    ));
+                    parent.spawn((SpriteBundle {
+                        texture: texture_handle_arm.clone(),
+                        transform: Transform::from_xyz(-152.3, -177.0, 0.1),
+                        ..Default::default()
+                    },));
                 });
         })
         .id();
@@ -99,29 +94,25 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
         .spawn((
             WobbleJoint::new(charles_entity, 0.2, -0.2, 0.01, false),
             SpatialBundle {
-                transform: Transform::from_xyz(-18.0, -180.0, 0.0),
+                transform: Transform::from_xyz(-18.0, -180.0 + 950.0, 0.0),
                 ..Default::default()
             },
         ))
         .with_children(|parent| {
-            parent.spawn((
-                SpriteBundle {
-                    texture: texture_handle_bottom.clone(),
-                    transform: Transform::from_xyz(-44.1, -407.7, 0.2),
-                    ..Default::default()
-                },
-            ));
+            parent.spawn((SpriteBundle {
+                texture: texture_handle_bottom.clone(),
+                transform: Transform::from_xyz(-44.1, -407.7, 0.2),
+                ..Default::default()
+            },));
         })
         .id();
 
     let shadow_entity = commands
-        .spawn((
-            SpriteBundle {
-                texture: shadow.clone(),
-                transform: Transform::from_xyz(-60., -950.0, 0.0),
-                ..Default::default()
-            },
-        ))
+        .spawn((SpriteBundle {
+            texture: shadow.clone(),
+            transform: Transform::from_xyz(-60., 0.0, 0.0),
+            ..Default::default()
+        },))
         .id();
 
     commands.entity(charles_entity).push_children(&[
