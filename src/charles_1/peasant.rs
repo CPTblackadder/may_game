@@ -56,7 +56,7 @@ fn apply_falling_sprite_rec(
     parent_child: &Query<&Children>,
     sprites: &Query<(Entity, &Handle<Image>), (With<Sprite>, Without<Shadow>)>,
     images: &Res<Assets<Image>>,
-    mut rng: &mut ThreadRng,
+    rng: &mut ThreadRng,
 ) {
     for child in children {
         if let Ok(children) = parent_child.get(*child) {
@@ -72,12 +72,6 @@ fn apply_falling_sprite_rec(
         }
         if let Ok((entity, image_handle)) = sprites.get(*child) {
             let i = images.get(image_handle);
-            let sprite_radious = if let Some(i) = i {
-                (i.texture_descriptor.size.height as f32 + i.texture_descriptor.size.width as f32)
-                    / 2.
-            } else {
-                0.0
-            };
 
             commands
                 .entity(entity)
@@ -92,12 +86,16 @@ fn apply_falling_sprite_rec(
                     },
                     crate::DeleteOnSceneChange,
                     FadingSprite::new(20.),
+                    SwapFace,
                 ))
                 .remove_parent_in_place()
                 .despawn_descendants();
         }
     }
 }
+
+#[derive(Component)]
+pub struct SwapFace;
 
 pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, location: Vec2) {
     let texture_handle_legs: Handle<Image> = asset_server.load("peasant_legs.png");
@@ -216,24 +214,67 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
     ]);
 }
 
-// Peasants stand around, when charles enters their cone of vision they give chase until charles is lost
+#[derive(Resource)]
+pub struct PeasantTimer(pub Timer);
 
-pub fn spawn_a_peasant(
+// Peasants stand around, when charles enters their cone of vision they give chase until charles is lost
+pub fn periodically_spawn_peasants(
+    mut commands: Commands,
+    charles_1: Query<&Transform, With<Charles1>>,
+    asset_server: Res<AssetServer>,
+    mut timer: ResMut<PeasantTimer>,
+    time: Res<Time>,
+) {
+    timer.0.tick(time.delta());
+    if timer.0.just_finished() {
+        let mut rand = thread_rng();
+
+        let c_trans = charles_1.single();
+        spawn_a_peasant(
+            &mut commands,
+            Vec2 {
+                x: c_trans.translation.x,
+                y: c_trans.translation.y,
+            },
+            &asset_server,
+            rand.gen_range(3..6),
+        )
+    }
+}
+
+fn spawn_a_peasant(
+    mut commands: &mut Commands,
+    charles_pos: Vec2,
+    asset_server: &Res<AssetServer>,
+    number: u32,
+) {
+    let mut rand = thread_rng();
+
+    for _ in 0..number {
+        let angle = rand.gen_range(0.0..2. * PI);
+        let distance = rand.gen_range(600.0..1500.0);
+        let spawn_point = (Vec2::from_angle(angle) * distance) + charles_pos;
+        spawn_peasant(&mut commands, &asset_server, spawn_point);
+    }
+}
+
+pub fn spawn_a_peasant_command(
     mut commands: Commands,
     keyboard_input: Res<Input<KeyCode>>,
     charles_1: Query<&Transform, With<Charles1>>,
     asset_server: Res<AssetServer>,
 ) {
     if keyboard_input.just_pressed(KeyCode::R) {
-        let mut rand = thread_rng();
         let c_trans = charles_1.single();
-
-        let angle = rand.gen_range(0.0..2. * PI);
-        let distance = rand.gen_range(600.0..1500.0);
-        let spawn_point = (Vec2::from_angle(angle) * distance)
-            + Vec2::new(c_trans.translation.x, c_trans.translation.y);
-
-        spawn_peasant(&mut commands, &asset_server, spawn_point);
+        spawn_a_peasant(
+            &mut commands,
+            Vec2 {
+                x: c_trans.translation.x,
+                y: c_trans.translation.y,
+            },
+            &asset_server,
+            1,
+        )
     }
 }
 
@@ -250,5 +291,19 @@ pub fn set_velocity_towards_charles(
 
         // Set velocity towards charles
         p_v.linvel = direction.normalize() * 2.;
+    }
+}
+
+pub fn swap_faces(
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut Handle<Image>), With<SwapFace>>,
+    asset_server: Res<AssetServer>,
+) {
+    for (e, mut s) in query.iter_mut() {
+        if *s == asset_server.load("peasant_head_happy.png") {
+            let new_handle = asset_server.load("peasant_head_shocked.png");
+            *s = new_handle;
+        }
+        commands.entity(e).remove::<SwapFace>();
     }
 }
