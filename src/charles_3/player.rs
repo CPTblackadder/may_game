@@ -9,7 +9,7 @@ pub fn create_player(commands: &mut Commands, assets: &Res<AssetServer>) {
         .spawn((
             Player,
             Velocity::zero(),
-            SpatialBundle {
+            SpriteBundle {
                 transform: Transform::from_scale(Vec3 {
                     x: 0.1,
                     y: 0.1,
@@ -20,15 +20,10 @@ pub fn create_player(commands: &mut Commands, assets: &Res<AssetServer>) {
                     y: 0.0,
                     z: 1.0,
                 }),
+                texture: assets.load("charles_3.png"),
                 ..Default::default()
             },
         ))
-        .with_children(|parent| {
-            parent.spawn((SpriteBundle {
-                texture: assets.load("charles_3.png"),
-                ..Default::default()
-            },));
-        })
         .id();
     commands.entity(entity);
 }
