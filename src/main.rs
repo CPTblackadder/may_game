@@ -23,7 +23,7 @@ use ui::scene_changer_ui;
 struct DeleteOnSceneChange;
 
 fn main() {
-    App::new()
+    let mut app = App::new()
         .add_state::<AppState>()
         .insert_resource(FixedTime::new_from_secs(1.0 / 60.0))
         .add_plugins(DefaultPlugins.set(ImagePlugin {
@@ -66,7 +66,7 @@ where
 }
 
 #[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
-enum AppState {
+pub enum AppState {
     MainMenu,
     #[default]
     Charles1,

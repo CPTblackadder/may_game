@@ -234,3 +234,19 @@ pub fn spawn_a_peasant(
         spawn_peasant(&mut commands, &asset_server, spawn_point);
     }
 }
+
+pub fn set_velocity_towards_charles(
+    mut peasants: Query<(&Transform, &mut Velocity), With<Peasant>>,
+    charles: Query<&Transform, With<Charles1>>,
+) {
+    let charles = charles.single();
+
+    for (p_t, mut p_v) in peasants.iter_mut() {
+        // Determine direction towards charles
+        let direction = charles.translation - p_t.translation;
+        let direction = dbg!(Vec2::new(direction.x, direction.y));
+
+        // Set velocity towards charles
+        p_v.linvel = direction.normalize() * 2.;
+    }
+}

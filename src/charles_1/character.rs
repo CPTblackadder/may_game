@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier2d::prelude::*;
 
+use crate::AppState;
+
 use super::{
     peasant::{Peasant, PeasantDie},
     wobble_joint::WobbleJoint,
@@ -233,8 +235,24 @@ fn raise_charles_1_arm(
     }
 }
 
-pub fn display_events(mut collision_events: EventReader<CollisionEvent>) {
+pub fn check_peasant_takes_charles(
+    mut collision_events: EventReader<CollisionEvent>,
+    peasants: Query<Entity, (With<Peasant>)>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
     for collision_event in collision_events.iter() {
         println!("Received collision event: {:?}", collision_event);
+        match collision_event {
+            CollisionEvent::Started(e1, e2, _) => {
+                if let Ok(p) = peasants.get(*e1) {
+                    println!("E1 was peasant");
+                    next_state.set(AppState::Charles1);
+                } else if let Ok(p) = peasants.get(*e2) {
+                    println!("E2 was peasant");
+                    next_state.set(AppState::Charles1);
+                }
+            }
+            CollisionEvent::Stopped(_, _, _) => (),
+        }
     }
 }

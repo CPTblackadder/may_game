@@ -55,14 +55,14 @@ fn wobbler_movement(
         let charles = charles_velocities.get(wobbler.velocity_entity_id);
         let rapier = rapier_velocities.get(wobbler.velocity_entity_id);
         if let Ok(vel) = charles {
-            vel_vec = vel.value;
+            vel_vec = vel.value / 10.;
         } else if let Ok(vel) = rapier {
             vel_vec = vel.linvel;
         } else {
             println!("Error, wobbler can't find velocity");
             return;
         }
-        if vel_vec.x != 0.0 || vel_vec.y != 0.0 {
+        if vel_vec.x.abs() > 0.05 || vel_vec.y.abs() > 0.05 {
             // add a bit more wobblyiness
             wobbler.velocity += wobbler.acceleration;
         }
