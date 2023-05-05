@@ -16,6 +16,7 @@ pub(crate) fn scene_changer_ui(
                 .show_ui(ui, |ui| {
                     ui.selectable_value(&mut selected, AppState::MainMenu, "Main Menu");
                     ui.selectable_value(&mut selected, AppState::Charles1, "Charles 1");
+                    ui.selectable_value(&mut selected, AppState::Charles3, "Charles 3");
                 });
 
             if selected != current_state.0 {

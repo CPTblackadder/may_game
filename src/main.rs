@@ -1,5 +1,6 @@
 mod bevy_tiling_background;
 mod charles_1;
+mod charles_3;
 mod cursor_position;
 mod ui;
 
@@ -15,6 +16,7 @@ use bevy_rapier2d::{
     render::RapierDebugRenderPlugin,
 };
 use charles_1::Charles1Plugin;
+use charles_3::Charles3Plugin;
 use ui::scene_changer_ui;
 
 #[derive(Component)]
@@ -35,6 +37,7 @@ fn main() {
         }))
         .add_plugin(TilingBackgroundPlugin::<BackgroundMaterial>::default())
         .add_plugin(Charles1Plugin)
+        .add_plugin(Charles3Plugin)
         .add_plugin(EguiPlugin)
         .add_plugin(DebugLinesPlugin::default())
         .add_plugin(bevy_inspector_egui::DefaultInspectorConfigPlugin) // adds default options and `InspectorEguiImpl`s
@@ -67,4 +70,5 @@ enum AppState {
     MainMenu,
     #[default]
     Charles1,
+    Charles3,
 }
