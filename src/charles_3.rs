@@ -1,6 +1,7 @@
-use self::player::{create_player, move_with_velocity, Player, Velocity};
+use self::player::{create_player, move_with_velocity, Player};
 use crate::{bevy_tiling_background::*, AppState};
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::Velocity;
 
 mod player;
 
@@ -46,19 +47,19 @@ fn handle_kb_input(input: Res<Input<KeyCode>>, mut velocities: Query<&mut Veloci
             }
             return val;
         };
-    for mut vel in velocities.iter_mut() {
-        vel.value.x = process_codes(
+    for mut v in velocities.iter_mut() {
+        v.linvel.x = process_codes(
             &*input,
             [KeyCode::D, KeyCode::Right].into(),
             [KeyCode::A, KeyCode::Left].into(),
         )
-        .unwrap_or(vel.value.x);
-        vel.value.y = process_codes(
+        .unwrap_or(v.linvel.x);
+        v.linvel.y = process_codes(
             &*input,
             [KeyCode::W, KeyCode::Up].into(),
             [KeyCode::S, KeyCode::Down].into(),
         )
-        .unwrap_or(vel.value.y);
-        vel.value;
+        .unwrap_or(v.linvel.y);
+        v.linvel;
     }
 }
