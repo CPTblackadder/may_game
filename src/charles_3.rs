@@ -1,14 +1,14 @@
-use self::player::{create_player, move_with_velocity, Player};
+use self::player::{create_player, handle_kb_input, move_with_velocity, Config, Keys};
 use crate::{bevy_tiling_background::*, AppState};
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::Velocity;
 
 mod player;
 
 pub struct Charles3Plugin;
 impl Plugin for Charles3Plugin {
     fn build(&self, app: &mut App) {
-        app.add_system(init.in_schedule(OnEnter(AppState::Charles3)))
+        app.insert_resource(CONFIG)
+            .add_system(init.in_schedule(OnEnter(AppState::Charles3)))
             .add_system(handle_kb_input.in_set(OnUpdate(AppState::Charles3)))
             .add_system(move_with_velocity.in_schedule(CoreSchedule::FixedUpdate));
     }
@@ -26,40 +26,10 @@ fn init(
     create_player(&mut commands, &asset_server);
 }
 
-fn handle_kb_input(input: Res<Input<KeyCode>>, mut velocities: Query<&mut Velocity, With<Player>>) {
-    let process_codes =
-        |key_code: &Input<KeyCode>, pos_codes: Vec<KeyCode>, neg_codes: Vec<KeyCode>| {
-            let speed = 3.0;
-            let mut val = None;
-            for pos_key in pos_codes.iter() {
-                if key_code.just_released(*pos_key) && !key_code.any_pressed(neg_codes.clone()) {
-                    return Some(0.0);
-                } else if key_code.just_pressed(*pos_key) {
-                    val = Some(speed);
-                }
-            }
-            for neg_key in neg_codes.iter() {
-                if key_code.just_released(*neg_key) && !key_code.any_pressed(pos_codes.clone()) {
-                    return Some(0.0);
-                } else if key_code.just_pressed(*neg_key) {
-                    val = Some(-speed);
-                }
-            }
-            return val;
-        };
-    for mut v in velocities.iter_mut() {
-        v.linvel.x = process_codes(
-            &*input,
-            [KeyCode::D, KeyCode::Right].into(),
-            [KeyCode::A, KeyCode::Left].into(),
-        )
-        .unwrap_or(v.linvel.x);
-        v.linvel.y = process_codes(
-            &*input,
-            [KeyCode::W, KeyCode::Up].into(),
-            [KeyCode::S, KeyCode::Down].into(),
-        )
-        .unwrap_or(v.linvel.y);
-        v.linvel;
-    }
-}
+const CONFIG: player::Config = Config {
+    speed: 3.0,
+    keys: Keys {
+        left: &[KeyCode::Left],
+        right: &[KeyCode::Right],
+    },
+};
