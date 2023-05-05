@@ -2,6 +2,7 @@ mod bevy_tiling_background;
 mod charles_1;
 mod charles_3;
 mod cursor_position;
+pub mod fading_sprite;
 mod ui;
 
 use crate::bevy_tiling_background::*;
@@ -17,6 +18,7 @@ use bevy_rapier2d::{
 };
 use charles_1::Charles1Plugin;
 use charles_3::Charles3Plugin;
+use fading_sprite::fade_then_remove_fading_sprites;
 use ui::scene_changer_ui;
 
 #[derive(Component)]
@@ -43,6 +45,7 @@ fn main() {
         .add_plugin(bevy_inspector_egui::DefaultInspectorConfigPlugin) // adds default options and `InspectorEguiImpl`s
         .add_plugin(WorldInspectorPlugin::new())
         .add_system(scene_changer_ui)
+        .add_system(fade_then_remove_fading_sprites)
         .add_startup_system(common_start_up)
         .add_system(cursor_position::cursor_position)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
