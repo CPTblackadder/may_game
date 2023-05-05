@@ -6,6 +6,8 @@ use bevy_rapier2d::prelude::*;
 use rand::{rngs::ThreadRng, thread_rng, Rng};
 use std::{default, f32::consts::PI};
 
+use crate::fading_sprite::FadingSprite;
+
 use super::{
     character::Charles1, falling_sprite::FallingSprite, wobble_joint::WobbleJoint, Shadow,
 };
@@ -89,6 +91,7 @@ fn apply_falling_sprite_rec(
                         },
                     },
                     crate::DeleteOnSceneChange,
+                    FadingSprite::new(20.),
                 ))
                 .remove_parent_in_place()
                 .despawn_descendants();
@@ -119,7 +122,6 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
             RigidBody::Dynamic,
             GravityScale(0.0),
             Collider::ball(190.0),
-            ActiveEvents::COLLISION_EVENTS,
             Velocity {
                 linvel: Vec2 { x: 1.0, y: 1.0 },
                 angvel: 0.0,
@@ -227,7 +229,7 @@ pub fn spawn_a_peasant(
         let c_trans = charles_1.single();
 
         let angle = rand.gen_range(0.0..2. * PI);
-        let distance = rand.gen_range(100.0..500.0);
+        let distance = rand.gen_range(600.0..1500.0);
         let spawn_point = (Vec2::from_angle(angle) * distance)
             + Vec2::new(c_trans.translation.x, c_trans.translation.y);
 
@@ -244,7 +246,7 @@ pub fn set_velocity_towards_charles(
     for (p_t, mut p_v) in peasants.iter_mut() {
         // Determine direction towards charles
         let direction = charles.translation - p_t.translation;
-        let direction = dbg!(Vec2::new(direction.x, direction.y));
+        let direction = Vec2::new(direction.x, direction.y);
 
         // Set velocity towards charles
         p_v.linvel = direction.normalize() * 2.;
