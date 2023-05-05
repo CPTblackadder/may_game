@@ -3,9 +3,9 @@ use bevy::prelude::*;
 use crate::{despawn_all, AppState, DeleteOnSceneChange};
 
 use super::{
-    character::Charles1,
+    character::{display_events, Charles1, Charles1Arm},
     falling_sprite::{caluculate_falling_sprites, FallingSprite},
-    peasant::{destroy_peasant, kill_all_peasants},
+    peasant::{destroy_peasant, spawn_a_peasant},
     wobble_joint::WobbleJointPlugin,
     *,
 };
@@ -15,7 +15,8 @@ impl Plugin for Charles1Plugin {
         app.add_plugin(Charles1)
             .add_plugin(WobbleJointPlugin)
             .register_type::<FallingSprite>()
-            .register_type::<Velocity>()
+            .register_type::<CharlesVelocity>()
+            .register_type::<Charles1Arm>()
             .insert_resource(ClearColor(make_colour(BACKGROUND_COLOUR)))
             .add_system(load_charles_1.in_schedule(OnEnter(AppState::Charles1)))
             .add_system(despawn_all::<DeleteOnSceneChange>.in_schedule(OnExit(AppState::Charles1)))
@@ -24,8 +25,9 @@ impl Plugin for Charles1Plugin {
                     take_user_input,
                     normalize_z_level::normalize_z_level,
                     destroy_peasant,
-                    kill_all_peasants,
+                    spawn_a_peasant,
                     camera_follows_charles,
+                    display_events,
                 )
                     .in_set(OnUpdate(AppState::Charles1)),
             )

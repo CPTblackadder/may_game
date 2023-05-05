@@ -10,7 +10,7 @@ bevy = "0.10"                                                          # make su
 bevy-inspector-egui = "0.18.3"
 bevy_rapier2d = { version = "0.21.0", features = ["debug-render-2d"] }
 rand = "0.8.5"
-# bevy_tiling_background = "0.10.0"
+bevy_prototype_debug_lines = "0.10.1"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]

@@ -3,10 +3,12 @@ use bevy::{
     sprite::MaterialMesh2dBundle,
 };
 use bevy_rapier2d::prelude::*;
-use rand::{rngs::ThreadRng, Rng};
+use rand::{rngs::ThreadRng, thread_rng, Rng};
 use std::{default, f32::consts::PI};
 
-use super::{falling_sprite::FallingSprite, wobble_joint::WobbleJoint, Shadow, Velocity};
+use super::{
+    character::Charles1, falling_sprite::FallingSprite, wobble_joint::WobbleJoint, Shadow,
+};
 
 #[derive(Component)]
 pub struct Peasant;
@@ -29,7 +31,7 @@ pub fn destroy_peasant(
     sprites: Query<(Entity, &Handle<Image>), (With<Sprite>, Without<Shadow>)>,
     images: Res<Assets<Image>>,
 ) {
-    let mut rng = rand::thread_rng();
+    let mut rng: ThreadRng = rand::thread_rng();
     for (p, children, t) in peasants.iter() {
         let floor = t.translation.y;
         apply_falling_sprite_rec(
@@ -108,12 +110,21 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
     let peasant_entity = commands
         .spawn((
             Peasant,
-            Velocity::new(false),
+            // Velocity::new(false),
             SpatialBundle {
                 transform: peasant_transform,
                 ..Default::default()
             },
             crate::DeleteOnSceneChange,
+            RigidBody::Dynamic,
+            GravityScale(0.0),
+            Collider::ball(190.0),
+            ActiveEvents::COLLISION_EVENTS,
+            Velocity {
+                linvel: Vec2 { x: 1.0, y: 1.0 },
+                angvel: 0.0,
+            },
+            LockedAxes::ROTATION_LOCKED, // Prevent rotating
         ))
         .id();
 
@@ -188,13 +199,12 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
         .spawn((
             SpriteBundle {
                 texture: shadow.clone(),
-                transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                transform: Transform::from_xyz(0., 0.0, 0.0),
                 ..Default::default()
             },
             Shadow,
-            Collider::ball(151.),
+            Name::new("Shadow Sprite"),
         ))
-        .insert(Sensor)
         .id();
 
     commands.entity(peasant_entity).push_children(&[
@@ -206,14 +216,21 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
 
 // Peasants stand around, when charles enters their cone of vision they give chase until charles is lost
 
-pub fn kill_all_peasants(
+pub fn spawn_a_peasant(
     mut commands: Commands,
     keyboard_input: Res<Input<KeyCode>>,
-    peasants: Query<Entity, With<Peasant>>,
+    charles_1: Query<&Transform, With<Charles1>>,
+    asset_server: Res<AssetServer>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Space) {
-        for p in peasants.iter() {
-            commands.entity(p).insert(PeasantDie);
-        }
+    if keyboard_input.just_pressed(KeyCode::R) {
+        let mut rand = thread_rng();
+        let c_trans = charles_1.single();
+
+        let angle = rand.gen_range(0.0..2. * PI);
+        let distance = rand.gen_range(100.0..500.0);
+        let spawn_point = (Vec2::from_angle(angle) * distance)
+            + Vec2::new(c_trans.translation.x, c_trans.translation.y);
+
+        spawn_peasant(&mut commands, &asset_server, spawn_point);
     }
 }

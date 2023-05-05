@@ -9,6 +9,7 @@ use bevy::{
     render::render_resource::{AddressMode, SamplerDescriptor},
 };
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
+use bevy_prototype_debug_lines::DebugLinesPlugin;
 use bevy_rapier2d::{
     prelude::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
@@ -35,6 +36,7 @@ fn main() {
         .add_plugin(TilingBackgroundPlugin::<BackgroundMaterial>::default())
         .add_plugin(Charles1Plugin)
         .add_plugin(EguiPlugin)
+        .add_plugin(DebugLinesPlugin::default())
         .add_plugin(bevy_inspector_egui::DefaultInspectorConfigPlugin) // adds default options and `InspectorEguiImpl`s
         .add_plugin(WorldInspectorPlugin::new())
         .add_system(scene_changer_ui)
@@ -46,7 +48,9 @@ fn main() {
 }
 
 fn common_start_up(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    let mut cam_bundle = Camera2dBundle::default();
+    cam_bundle.transform.scale = Vec3::new(1.2, 1.2, 1.);
+    commands.spawn(cam_bundle);
 }
 
 fn despawn_all<T>(mut commands: Commands, query: Query<Entity, With<T>>)

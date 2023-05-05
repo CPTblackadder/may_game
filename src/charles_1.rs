@@ -47,16 +47,16 @@ pub enum FacingDirection {
 }
 
 #[derive(Component, Reflect)]
-pub struct Velocity {
+pub struct CharlesVelocity {
     can_change_facing_direction: bool,
 
     value: Vec2,
     facing: FacingDirection,
 }
 
-impl Velocity {
-    fn new(can_change_facing_direction: bool) -> Velocity {
-        Velocity {
+impl CharlesVelocity {
+    fn new(can_change_facing_direction: bool) -> CharlesVelocity {
+        CharlesVelocity {
             value: Vec2 { x: 0.0, y: 0.0 },
             can_change_facing_direction,
             facing: FacingDirection::Left,
@@ -91,7 +91,7 @@ fn process_userinput(
 
 fn take_user_input(
     keyboard_input: Res<Input<KeyCode>>,
-    mut velocities: Query<&mut Velocity, With<Charles1>>,
+    mut velocities: Query<&mut CharlesVelocity, With<Charles1>>,
 ) {
     for mut vel in velocities.iter_mut() {
         vel.value.x = process_userinput(
@@ -110,7 +110,7 @@ fn take_user_input(
     }
 }
 
-fn move_with_velocity(mut transforms: Query<(&mut Transform, &mut Velocity)>) {
+fn move_with_velocity(mut transforms: Query<(&mut Transform, &mut CharlesVelocity)>) {
     for (mut trans, mut vel) in transforms.iter_mut() {
         trans.translation += vel.value.extend(0.0);
         if vel.can_change_facing_direction {
