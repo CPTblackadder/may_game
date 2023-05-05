@@ -28,6 +28,7 @@ impl Plugin for Charles1Plugin {
                     spawn_a_peasant,
                     camera_follows_charles,
                     check_peasant_takes_charles,
+                    set_velocity_towards_charles,
                 )
                     .in_set(OnUpdate(AppState::Charles1)),
             )
@@ -35,7 +36,6 @@ impl Plugin for Charles1Plugin {
                 (
                     move_with_velocity,
                     caluculate_falling_sprites.before(destroy_peasant),
-                    set_velocity_towards_charles,
                 )
                     .in_set(OnUpdate(AppState::Charles1))
                     .in_schedule(CoreSchedule::FixedUpdate),
