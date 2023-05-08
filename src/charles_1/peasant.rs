@@ -10,7 +10,7 @@ use crate::fading_sprite::FadingSprite;
 
 use super::{
     character::Charles1, falling_sprite::FallingSprite, kills_required::PeasantKilled,
-    wobble_joint::WobbleJoint, Shadow,
+    wobble_joint::WobbleJoint, Shadow, PEASANT_MAX_HEALTH,
 };
 
 #[derive(Resource)]
@@ -21,7 +21,8 @@ pub struct FaceResources {
 
 #[derive(Component)]
 pub struct Peasant {
-    health: i32,
+    pub hit_by: [i32; PEASANT_MAX_HEALTH],
+    pub head: Entity,
 }
 
 pub fn destroy_peasant(
@@ -113,10 +114,19 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
 
     let mut peasant_transform: Transform = Transform::from_translation(location.extend(0.0));
     peasant_transform.scale = Vec3::new(0.2, 0.2, 1.0);
-
+    let head_entity = commands
+        .spawn((SpriteBundle {
+            texture: texture_handle_head.clone(),
+            transform: Transform::from_xyz(0.0, 200.0, 0.1),
+            ..Default::default()
+        },))
+        .id();
     let peasant_entity = commands
         .spawn((
-            Peasant { health: 2 },
+            Peasant {
+                hit_by: [-1; PEASANT_MAX_HEALTH],
+                head: head_entity,
+            },
             // Velocity::new(false),
             SpatialBundle {
                 transform: peasant_transform,
@@ -130,18 +140,25 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
                 linvel: Vec2 { x: 0.0, y: 0.0 },
                 angvel: 0.0,
             },
+            AdditionalMassProperties::Mass(0.2),
             ExternalForce {
                 force: Vec2::new(0.0, 0.0),
                 torque: 1.0,
             },
             ExternalImpulse {
-                impulse: Vec2::new(1.0, 1.0),
+                impulse: Vec2::new(0.0, 0.0),
                 torque_impulse: 1.0,
             },
             Damping {
-                linear_damping: 0.5,
+                linear_damping: 0.8,
                 angular_damping: 1.0,
             },
+            Friction::coefficient(0.0),
+            Restitution {
+                coefficient: 0.00,
+                combine_rule: CoefficientCombineRule::Min,
+            },
+            Ccd::enabled(),
             LockedAxes::ROTATION_LOCKED, // Prevent rotating
         ))
         .id();
@@ -170,13 +187,7 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
                                 ..Default::default()
                             },
                         ))
-                        .with_children(|parent| {
-                            parent.spawn((SpriteBundle {
-                                texture: texture_handle_head.clone(),
-                                transform: Transform::from_xyz(0.0, 200.0, 0.1),
-                                ..Default::default()
-                            },));
-                        });
+                        .add_child(head_entity);
                 });
             parent
                 .spawn((
@@ -241,6 +252,8 @@ pub fn periodically_spawn_peasants(
     charles_1: Query<&Transform, With<Charles1>>,
     asset_server: Res<AssetServer>,
     mut timer: ResMut<PeasantTimer>,
+    peasants: Query<&Transform, With<Peasant>>,
+
     time: Res<Time>,
 ) {
     timer.0.tick(time.delta());
@@ -254,6 +267,7 @@ pub fn periodically_spawn_peasants(
                 x: c_trans.translation.x,
                 y: c_trans.translation.y,
             },
+            &peasants,
             &asset_server,
             rand.gen_range(3..6),
         )
@@ -263,23 +277,46 @@ pub fn periodically_spawn_peasants(
 fn spawn_a_peasant(
     mut commands: &mut Commands,
     charles_pos: Vec2,
+    peasants: &Query<&Transform, With<Peasant>>,
     asset_server: &Res<AssetServer>,
-    number: u32,
+    number: usize,
 ) {
-    let mut rand = thread_rng();
+    fn points_too_close(a: Vec2, b: Vec2) -> bool {
+        (a - b).length() < 300.
+    }
 
-    for _ in 0..number {
+    let mut rand = thread_rng();
+    let attempts_made = 0;
+
+    let mut peasnts_spawned = Vec::new();
+
+    while peasnts_spawned.len() < number && attempts_made < 100 {
         let angle = rand.gen_range(0.0..2. * PI);
         let distance = rand.gen_range(600.0..1500.0);
         let spawn_point = (Vec2::from_angle(angle) * distance) + charles_pos;
+
+        // Check spawn point
+        if peasants
+            .iter()
+            .any(|x| points_too_close(Vec2::new(x.translation.x, x.translation.y), spawn_point))
+            || peasnts_spawned
+                .iter()
+                .any(|x| points_too_close(*x, spawn_point))
+        {
+            continue;
+        }
+        peasnts_spawned.push(spawn_point);
         spawn_peasant(&mut commands, &asset_server, spawn_point);
     }
+
+    for _ in 0..number {}
 }
 
 pub fn spawn_a_peasant_command(
     mut commands: Commands,
     keyboard_input: Res<Input<KeyCode>>,
     charles_1: Query<&Transform, With<Charles1>>,
+    peasants: Query<&Transform, With<Peasant>>,
     asset_server: Res<AssetServer>,
 ) {
     if keyboard_input.just_pressed(KeyCode::R) {
@@ -290,6 +327,7 @@ pub fn spawn_a_peasant_command(
                 x: c_trans.translation.x,
                 y: c_trans.translation.y,
             },
+            &peasants,
             &asset_server,
             1,
         )
@@ -308,6 +346,12 @@ pub fn add_velocity_towards_charles(
         let direction = Vec2::new(direction.x, direction.y);
 
         // Set velocity towards charles
-        p_v.force = direction.normalize() * 0.5;
+        p_v.force = direction.normalize() * 1.5;
+    }
+}
+
+pub fn cap_peasant_velocity(mut peasants: Query<&mut Velocity, With<Peasant>>) {
+    for mut p in peasants.iter_mut() {
+        p.linvel = p.linvel.clamp_length_max(2.0);
     }
 }

@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use bevy::prelude::*;
 
-use super::TOTAL_KILL_REQUIRED_TO_BEAT_LEVEL;
+use super::{peasant::Peasant, PEASANT_MAX_HEALTH, TOTAL_KILL_REQUIRED_TO_BEAT_LEVEL};
 
 pub struct PeasantKilled(pub Entity);
 

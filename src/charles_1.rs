@@ -24,6 +24,7 @@ pub struct Charles1Plugin;
 pub struct Shadow;
 
 const TOTAL_KILL_REQUIRED_TO_BEAT_LEVEL: usize = 50;
+const PEASANT_MAX_HEALTH: usize = 2;
 
 fn load_charles_1(
     mut commands: Commands,

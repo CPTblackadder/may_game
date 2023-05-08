@@ -5,8 +5,10 @@ use bevy_rapier2d::prelude::*;
 use crate::AppState;
 
 use super::{
-    kills_required::PeasantKilled, peasant::Peasant, wobble_joint::WobbleJoint, CharlesVelocity,
-    Shadow,
+    kills_required::PeasantKilled,
+    peasant::{FaceResources, Peasant},
+    wobble_joint::WobbleJoint,
+    CharlesVelocity, Shadow, PEASANT_MAX_HEALTH,
 };
 
 #[derive(Component)]
@@ -174,13 +176,21 @@ fn raise_charles_1_arm(
     keys: Res<Input<KeyCode>>,
     mut arms: Query<
         (&mut Transform, &mut Charles1Arm, &Children),
-        (Without<Peasant>, With<Charles1Arm>),
+        (Without<Peasant>, Without<Charles1>),
     >,
-    peasants: Query<(Entity, &Transform), (With<Peasant>, Without<Charles1Arm>)>,
+    mut peasants: Query<
+        (Entity, &Transform, &mut Peasant, &mut ExternalImpulse),
+        (Without<Charles1Arm>),
+    >,
+    mut peasant_heads: Query<&mut Handle<Image>, (Without<Charles1Arm>)>,
+    charles: Query<&Transform, With<Charles1>>,
     global_transforms: Query<&GlobalTransform>,
-    mut lines: ResMut<DebugLines>,
     mut peasant_killed_event: EventWriter<PeasantKilled>,
+    mut times_raised: Local<i32>,
+    faces: Res<FaceResources>,
 ) {
+    let charles_pos = charles.single().translation;
+    let charles_pos = Vec2::new(charles_pos.x, charles_pos.y);
     for (mut transform, mut arm, child_entities) in arms.iter_mut() {
         if keys.pressed(KeyCode::Space) && arm.state == Charles1ArmState::AtRest {
             arm.state = Charles1ArmState::Rising;
@@ -196,6 +206,7 @@ fn raise_charles_1_arm(
         if new_angle >= 0.0 {
             new_angle = 0.0;
             arm.state = Charles1ArmState::AtRest;
+            *times_raised += 1;
         } else if new_angle <= -2.0 {
             new_angle = -2.0;
             arm.state = Charles1ArmState::Falling;
@@ -204,7 +215,7 @@ fn raise_charles_1_arm(
         transform.rotation = Quat::from_rotation_z(new_angle);
 
         if arm.state == Charles1ArmState::Rising {
-            for p in peasants.iter() {
+            for mut p in peasants.iter_mut() {
                 // Calculate bounding box
                 let peasant_position = p.1.translation;
                 let box_top_right: Vec2 = Vec2 {
@@ -216,8 +227,6 @@ fn raise_charles_1_arm(
                     y: peasant_position.y,
                 };
 
-                lines.line(box_bottom_left.extend(0.), box_top_right.extend(0.), 0.5);
-
                 // Check if any of the children of Charles1Arm are in it
                 for e in child_entities.iter() {
                     let hit_point = global_transforms.get(*e).unwrap().translation();
@@ -227,7 +236,22 @@ fn raise_charles_1_arm(
                         && hit_point.x > box_bottom_left.x
                         && hit_point.y > box_bottom_left.y
                     {
-                        peasant_killed_event.send(PeasantKilled(p.0));
+                        match calculate_peasant_damage(*times_raised, &mut p.2.hit_by) {
+                            PeasantDamage::Hit => {
+                                if let Ok(mut handle) = peasant_heads.get_mut(p.2.head) {
+                                    *handle = faces.shocked_head.clone();
+                                }
+
+                                // peasant position - charles position
+                                let force_dir = p.1.translation;
+                                let force_dir =
+                                    (Vec2::new(force_dir.x, force_dir.y) - charles_pos).normalize();
+                                println!("Forcing in: {}", force_dir);
+                                p.3.impulse = force_dir;
+                            }
+                            PeasantDamage::Killed => peasant_killed_event.send(PeasantKilled(p.0)),
+                            PeasantDamage::None => (),
+                        }
                     }
                 }
             }
@@ -237,7 +261,7 @@ fn raise_charles_1_arm(
 
 pub fn check_peasant_takes_charles(
     mut collision_events: EventReader<CollisionEvent>,
-    peasants: Query<Entity, (With<Peasant>)>,
+    peasants: Query<Entity, With<Peasant>>,
     mut next_state: ResMut<NextState<AppState>>,
 ) {
     for collision_event in collision_events.iter() {
@@ -254,5 +278,27 @@ pub fn check_peasant_takes_charles(
             }
             CollisionEvent::Stopped(_, _, _) => (),
         }
+    }
+}
+
+enum PeasantDamage {
+    Hit,
+    Killed,
+    None,
+}
+
+fn calculate_peasant_damage(hit_id: i32, hit_by: &mut [i32; PEASANT_MAX_HEALTH]) -> PeasantDamage {
+    let mut i = 0;
+    println!("{:?}", hit_by);
+    while i < PEASANT_MAX_HEALTH && !(hit_by[i] == -1 || hit_by[i] == hit_id) {
+        i += 1;
+    }
+    if i == PEASANT_MAX_HEALTH {
+        PeasantDamage::Killed
+    } else if hit_by[i] == hit_id {
+        PeasantDamage::None
+    } else {
+        hit_by[i] = hit_id;
+        PeasantDamage::Hit
     }
 }

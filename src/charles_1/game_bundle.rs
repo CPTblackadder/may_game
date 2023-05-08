@@ -9,7 +9,8 @@ use super::{
     falling_sprite::{caluculate_falling_sprites, FallingSprite},
     kills_required::{track_kills, PeasantKilled, TotalPeasantsKilled},
     peasant::{
-        add_velocity_towards_charles, destroy_peasant, periodically_spawn_peasants, PeasantTimer,
+        add_velocity_towards_charles, cap_peasant_velocity, destroy_peasant,
+        periodically_spawn_peasants, PeasantTimer,
     },
     ui::health_and_kills_needed_ui,
     wobble_joint::WobbleJointPlugin,
@@ -50,6 +51,7 @@ impl Plugin for Charles1Plugin {
                 (
                     move_with_velocity,
                     caluculate_falling_sprites.before(destroy_peasant),
+                    cap_peasant_velocity,
                 )
                     .in_set(OnUpdate(AppState::Charles1))
                     .in_schedule(CoreSchedule::FixedUpdate),

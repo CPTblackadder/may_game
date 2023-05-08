@@ -27,7 +27,7 @@ struct DeleteOnSceneChange;
 fn main() {
     let mut app = App::new()
         .add_state::<AppState>()
-        .insert_resource(FixedTime::new_from_secs(1.0 / 60.0))
+        .insert_resource(FixedTime::new_from_secs(1.0 / 120.0))
         .add_plugins(DefaultPlugins.set(ImagePlugin {
             default_sampler: SamplerDescriptor {
                 // Added from https://github.com/bevyengine/bevy/issues/399 to fix the back ground grass texture
@@ -49,7 +49,7 @@ fn main() {
         .add_startup_system(common_start_up)
         .add_system(cursor_position::cursor_position)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
-        .add_plugin(RapierDebugRenderPlugin::default())
+        // .add_plugin(RapierDebugRenderPlugin::default())
         .run();
 }
 
