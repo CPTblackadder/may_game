@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::Velocity;
+use bevy_rapier2d::prelude::*;
 
 #[derive(Component)]
 pub struct Player;
@@ -13,13 +13,18 @@ pub struct Config {
 pub struct Keys {
     pub left: &'static [KeyCode],
     pub right: &'static [KeyCode],
+    pub jump: &'static [KeyCode],
 }
 
 pub fn create_player(commands: &mut Commands, assets: &Res<AssetServer>) {
     let entity = commands
         .spawn((
+            Collider::cuboid(500.0, 50.0),
             Player,
             Velocity::zero(),
+            Restitution::coefficient(0.0),
+            RigidBody::Dynamic,
+            GravityScale(0.1),
             SpriteBundle {
                 transform: Transform::from_scale(Vec3 {
                     x: 0.1,
@@ -63,6 +68,13 @@ pub fn handle_kb_input(
                 v.linvel.x = 0.0;
             } else if input.just_pressed(*k) {
                 v.linvel.x = config.speed;
+            }
+        }
+        for k in config.keys.jump.iter() {
+            if input.just_released(*k) {
+                v.linvel.y = 0.0;
+            } else if input.just_pressed(*k) {
+                v.linvel.y = 6.0;
             }
         }
     });
