@@ -12,10 +12,7 @@ use bevy::{
 };
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use bevy_prototype_debug_lines::DebugLinesPlugin;
-use bevy_rapier2d::{
-    prelude::{NoUserData, RapierPhysicsPlugin},
-    render::RapierDebugRenderPlugin,
-};
+use bevy_rapier2d::{prelude::*, render::RapierDebugRenderPlugin};
 use charles_1::Charles1Plugin;
 use charles_3::Charles3Plugin;
 use fading_sprite::fade_then_remove_fading_sprites;
