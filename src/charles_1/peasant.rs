@@ -9,43 +9,49 @@ use std::{default, f32::consts::PI};
 use crate::fading_sprite::FadingSprite;
 
 use super::{
-    character::Charles1, falling_sprite::FallingSprite, wobble_joint::WobbleJoint, Shadow,
+    character::Charles1, falling_sprite::FallingSprite, kills_required::PeasantKilled,
+    wobble_joint::WobbleJoint, Shadow,
 };
 
-#[derive(Component)]
-pub struct Peasant;
-
-#[derive(Default)]
-enum PeasantState {
-    #[default]
-    Idle,
-    Tracking,
+#[derive(Resource)]
+pub struct FaceResources {
+    pub happy_head: Handle<Image>,
+    pub shocked_head: Handle<Image>,
 }
 
 #[derive(Component)]
-#[component(storage = "SparseSet")]
-pub struct PeasantDie;
+pub struct Peasant {
+    health: i32,
+}
 
 pub fn destroy_peasant(
     mut commands: Commands,
-    peasants: Query<(Entity, &Children, &Transform), With<PeasantDie>>,
+    peasants: Query<(&Children, &Transform), With<Peasant>>,
     parent_child: Query<&Children>,
-    sprites: Query<(Entity, &Handle<Image>), (With<Sprite>, Without<Shadow>)>,
+    mut sprites: Query<(Entity, &mut Handle<Image>), (With<Sprite>, Without<Shadow>)>,
     images: Res<Assets<Image>>,
+    face_res: Res<FaceResources>,
+    mut killed_events: EventReader<PeasantKilled>,
 ) {
     let mut rng: ThreadRng = rand::thread_rng();
-    for (p, children, t) in peasants.iter() {
-        let floor = t.translation.y;
-        apply_falling_sprite_rec(
-            floor,
-            &mut commands,
-            children,
-            &parent_child,
-            &sprites,
-            &images,
-            &mut rng,
-        );
-        commands.entity(p).despawn_recursive();
+    for k in killed_events.iter() {
+        let p = k.0;
+        println!("Tying to Kill: {:?}", p);
+        if let Ok((children, t)) = peasants.get(p) {
+            println!("Actually killing: {:?}", p);
+            let floor = t.translation.y;
+            apply_falling_sprite_rec(
+                floor,
+                &mut commands,
+                children,
+                &parent_child,
+                &mut sprites,
+                &images,
+                &mut rng,
+                &face_res,
+            );
+            commands.entity(p).despawn_recursive();
+        }
     }
 }
 
@@ -54,9 +60,10 @@ fn apply_falling_sprite_rec(
     mut commands: &mut Commands,
     children: &Children,
     parent_child: &Query<&Children>,
-    sprites: &Query<(Entity, &Handle<Image>), (With<Sprite>, Without<Shadow>)>,
+    mut sprites: &mut Query<(Entity, &mut Handle<Image>), (With<Sprite>, Without<Shadow>)>,
     images: &Res<Assets<Image>>,
     rng: &mut ThreadRng,
+    face_res: &Res<FaceResources>,
 ) {
     for child in children {
         if let Ok(children) = parent_child.get(*child) {
@@ -68,10 +75,13 @@ fn apply_falling_sprite_rec(
                 sprites,
                 images,
                 rng,
+                face_res,
             );
         }
-        if let Ok((entity, image_handle)) = sprites.get(*child) {
-            let i = images.get(image_handle);
+        if let Ok((entity, mut image_handle)) = sprites.get_mut(*child) {
+            if *image_handle == face_res.happy_head {
+                *image_handle = face_res.shocked_head.clone();
+            }
 
             commands
                 .entity(entity)
@@ -86,16 +96,12 @@ fn apply_falling_sprite_rec(
                     },
                     crate::DeleteOnSceneChange,
                     FadingSprite::new(20.),
-                    SwapFace,
                 ))
                 .remove_parent_in_place()
                 .despawn_descendants();
         }
     }
 }
-
-#[derive(Component)]
-pub struct SwapFace;
 
 pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, location: Vec2) {
     let texture_handle_legs: Handle<Image> = asset_server.load("peasant_legs.png");
@@ -110,7 +116,7 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
 
     let peasant_entity = commands
         .spawn((
-            Peasant,
+            Peasant { health: 2 },
             // Velocity::new(false),
             SpatialBundle {
                 transform: peasant_transform,
@@ -121,8 +127,20 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
             GravityScale(0.0),
             Collider::ball(190.0),
             Velocity {
-                linvel: Vec2 { x: 1.0, y: 1.0 },
+                linvel: Vec2 { x: 0.0, y: 0.0 },
                 angvel: 0.0,
+            },
+            ExternalForce {
+                force: Vec2::new(0.0, 0.0),
+                torque: 1.0,
+            },
+            ExternalImpulse {
+                impulse: Vec2::new(1.0, 1.0),
+                torque_impulse: 1.0,
+            },
+            Damping {
+                linear_damping: 0.5,
+                angular_damping: 1.0,
             },
             LockedAxes::ROTATION_LOCKED, // Prevent rotating
         ))
@@ -278,8 +296,8 @@ pub fn spawn_a_peasant_command(
     }
 }
 
-pub fn set_velocity_towards_charles(
-    mut peasants: Query<(&Transform, &mut Velocity), With<Peasant>>,
+pub fn add_velocity_towards_charles(
+    mut peasants: Query<(&Transform, &mut ExternalForce), With<Peasant>>,
     charles: Query<&Transform, With<Charles1>>,
 ) {
     let charles = charles.single();
@@ -290,20 +308,6 @@ pub fn set_velocity_towards_charles(
         let direction = Vec2::new(direction.x, direction.y);
 
         // Set velocity towards charles
-        p_v.linvel = direction.normalize() * 2.;
-    }
-}
-
-pub fn swap_faces(
-    mut commands: Commands,
-    mut query: Query<(Entity, &mut Handle<Image>), With<SwapFace>>,
-    asset_server: Res<AssetServer>,
-) {
-    for (e, mut s) in query.iter_mut() {
-        if *s == asset_server.load("peasant_head_happy.png") {
-            let new_handle = asset_server.load("peasant_head_shocked.png");
-            *s = new_handle;
-        }
-        commands.entity(e).remove::<SwapFace>();
+        p_v.force = direction.normalize() * 0.5;
     }
 }

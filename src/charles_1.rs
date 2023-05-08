@@ -3,14 +3,19 @@ use bevy::{prelude::*, sprite::*};
 
 use self::{
     character::{create_charles_1, Charles1},
-    peasant::spawn_peasant,
+    cromwell::spawn_cromwell,
+    kills_required::TotalPeasantsKilled,
+    peasant::{spawn_peasant, FaceResources},
 };
 
 mod character;
+mod cromwell;
 mod falling_sprite;
 mod game_bundle;
+mod kills_required;
 mod normalize_z_level;
 mod peasant;
+mod ui;
 mod wobble_joint;
 
 pub struct Charles1Plugin;
@@ -18,10 +23,13 @@ pub struct Charles1Plugin;
 #[derive(Component)]
 pub struct Shadow;
 
+const TOTAL_KILL_REQUIRED_TO_BEAT_LEVEL: usize = 50;
+
 fn load_charles_1(
     mut commands: Commands,
     mut back_materials: ResMut<Assets<BackgroundMaterial>>,
     asset_server: Res<AssetServer>,
+    mut required_kills: ResMut<TotalPeasantsKilled>,
 ) {
     let grass_image = asset_server.load("grass.png");
     commands.spawn((
@@ -31,10 +39,22 @@ fn load_charles_1(
         crate::DeleteOnSceneChange,
     ));
 
+    // create face image resource
+    let happy_head: Handle<Image> = asset_server.load("peasant_head_happy.png");
+    let shocked_head: Handle<Image> = asset_server.load("peasant_head_shocked.png");
+    commands.insert_resource(FaceResources {
+        happy_head,
+        shocked_head,
+    });
+
     // king
     create_charles_1(&mut commands, &asset_server);
 
+    // spawn_cromwell(&mut commands, &asset_server);
+
     spawn_peasant(&mut commands, &asset_server, Vec2::new(100.0, -600.0));
+
+    required_kills.0.clear();
 }
 
 #[derive(Component)]

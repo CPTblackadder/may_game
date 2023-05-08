@@ -5,9 +5,8 @@ use bevy_rapier2d::prelude::*;
 use crate::AppState;
 
 use super::{
-    peasant::{Peasant, PeasantDie},
-    wobble_joint::WobbleJoint,
-    CharlesVelocity, Shadow,
+    kills_required::PeasantKilled, peasant::Peasant, wobble_joint::WobbleJoint, CharlesVelocity,
+    Shadow,
 };
 
 #[derive(Component)]
@@ -180,6 +179,7 @@ fn raise_charles_1_arm(
     peasants: Query<(Entity, &Transform), (With<Peasant>, Without<Charles1Arm>)>,
     global_transforms: Query<&GlobalTransform>,
     mut lines: ResMut<DebugLines>,
+    mut peasant_killed_event: EventWriter<PeasantKilled>,
 ) {
     for (mut transform, mut arm, child_entities) in arms.iter_mut() {
         if keys.pressed(KeyCode::Space) && arm.state == Charles1ArmState::AtRest {
@@ -216,7 +216,7 @@ fn raise_charles_1_arm(
                     y: peasant_position.y,
                 };
 
-                lines.line(box_bottom_left.extend(0.), box_top_right.extend(0.), 0.);
+                lines.line(box_bottom_left.extend(0.), box_top_right.extend(0.), 0.5);
 
                 // Check if any of the children of Charles1Arm are in it
                 for e in child_entities.iter() {
@@ -227,7 +227,7 @@ fn raise_charles_1_arm(
                         && hit_point.x > box_bottom_left.x
                         && hit_point.y > box_bottom_left.y
                     {
-                        commands.entity(p.0).insert(PeasantDie);
+                        peasant_killed_event.send(PeasantKilled(p.0));
                     }
                 }
             }
