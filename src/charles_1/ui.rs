@@ -1,7 +1,10 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_inspector_egui::{bevy_egui::*, egui::ProgressBar};
+use bevy_inspector_egui::{
+    bevy_egui::*,
+    egui::{ProgressBar, RichText},
+};
 
 use crate::AppState;
 
@@ -54,5 +57,25 @@ pub fn crown_loss_timer(
         } else {
             next_state.set(AppState::Charles1);
         }
+    }
+}
+
+pub fn win_ui(
+    mut contexts: EguiContexts,
+    key_code: Res<Input<KeyCode>>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
+    let ctx: &mut egui::Context = contexts.ctx_mut();
+    egui::CentralPanel::default().show(&ctx, |ui| {
+        ui.with_layout(
+            egui::Layout::centered_and_justified(egui::Direction::TopDown),
+            |ui| {
+                ui.label(RichText::new("You won!\nPress R to restart").size(50.0));
+            },
+        );
+    });
+
+    if key_code.just_pressed(KeyCode::R) {
+        next_state.set(AppState::Charles1);
     }
 }

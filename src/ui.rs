@@ -25,4 +25,3 @@ pub(crate) fn scene_changer_ui(
         });
     });
 }
-

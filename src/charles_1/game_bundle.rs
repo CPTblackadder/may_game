@@ -12,7 +12,7 @@ use super::{
         add_velocity_towards_charles, cap_peasant_velocity, destroy_peasant,
         periodically_spawn_peasants, reclaim_crown, PeasantTimer,
     },
-    ui::{crown_loss_timer, health_and_kills_needed_ui, CrownLost},
+    ui::{crown_loss_timer, health_and_kills_needed_ui, win_ui, CrownLost},
     wobble_joint::WobbleJointPlugin,
     *,
 };
@@ -33,6 +33,7 @@ impl Plugin for Charles1Plugin {
             )))
             .add_system(load_charles_1.in_schedule(OnEnter(AppState::Charles1)))
             .add_system(despawn_all::<DeleteOnSceneChange>.in_schedule(OnExit(AppState::Charles1)))
+            .add_system(win_ui.in_set(OnUpdate(AppState::Win)))
             .add_systems(
                 (
                     take_user_input,

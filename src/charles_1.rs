@@ -24,7 +24,7 @@ pub struct Charles1Plugin;
 #[derive(Component)]
 pub struct Shadow;
 
-const TOTAL_KILL_REQUIRED_TO_BEAT_LEVEL: usize = 50;
+const TOTAL_KILL_REQUIRED_TO_BEAT_LEVEL: usize = 20;
 const PEASANT_MAX_HEALTH: usize = 1;
 
 fn load_charles_1(
@@ -39,7 +39,7 @@ fn load_charles_1(
         BackgroundImageBundle::from_image(grass_image, back_materials.as_mut())
             .at_z_layer(0.1)
             .with_movement_scale(0.5),
-        crate::DeleteOnSceneChange,
+        // crate::DeleteOnSceneChange,
     ));
 
     // create face image resource

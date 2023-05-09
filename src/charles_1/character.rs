@@ -207,7 +207,12 @@ pub fn raise_charles_1_arm(
     mut cooldown: Local<Timer>,
     time: Res<Time>,
 ) {
-    let charles_pos = charles.single().translation;
+    let charles_pos;
+    if let Ok(c) = charles.get_single() {
+        charles_pos = c.translation;
+    } else {
+        return;
+    }
     let charles_pos = Vec2::new(charles_pos.x, charles_pos.y);
     cooldown.tick(time.delta());
     for (mut transform, mut arm, child_entities) in arms.iter_mut() {

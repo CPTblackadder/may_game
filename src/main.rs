@@ -38,10 +38,10 @@ fn main() {
         .add_plugin(Charles1Plugin)
         .add_plugin(Charles3Plugin)
         .add_plugin(EguiPlugin)
-        .add_plugin(DebugLinesPlugin::default())
-        .add_plugin(bevy_inspector_egui::DefaultInspectorConfigPlugin) // adds default options and `InspectorEguiImpl`s
-        .add_plugin(WorldInspectorPlugin::new())
-        .add_system(scene_changer_ui)
+        // .add_plugin(DebugLinesPlugin::default())
+        // .add_plugin(bevy_inspector_egui::DefaultInspectorConfigPlugin) // adds default options and `InspectorEguiImpl`s
+        // .add_plugin(WorldInspectorPlugin::new())
+        // .add_system(scene_changer_ui)
         .add_system(fade_then_remove_fading_sprites)
         .add_startup_system(common_start_up)
         // .add_system(cursor_position::cursor_position)
@@ -71,4 +71,5 @@ pub enum AppState {
     #[default]
     Charles1,
     Charles3,
+    Win,
 }
