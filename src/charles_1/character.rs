@@ -1,10 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier2d::prelude::*;
-
-use crate::AppState;
 
 use super::{
     kills_required::PeasantKilled,

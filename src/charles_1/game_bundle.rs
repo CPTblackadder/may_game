@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 
-use crate::{despawn_all, AppState, DeleteOnSceneChange};
+use crate::{despawn_all, AppState, Charles1State, DeleteOnSceneChange};
 
 use super::{
     character::{check_peasant_takes_charles, raise_charles_1_arm, Charles1, Charles1Arm},
@@ -34,9 +34,19 @@ impl Plugin for Charles1Plugin {
             .add_system(load_charles_1.in_schedule(OnEnter(AppState::Charles1)))
             .add_system(despawn_all::<DeleteOnSceneChange>.in_schedule(OnExit(AppState::Charles1)))
             .add_systems(
+                (normalize_z_level::normalize_z_level,).in_set(OnUpdate(AppState::Charles1)),
+            )
+            .add_systems(
+                (
+                    move_with_velocity,
+                    caluculate_falling_sprites.before(destroy_peasant),
+                )
+                    .in_set(OnUpdate(AppState::Charles1))
+                    .in_schedule(CoreSchedule::FixedUpdate),
+            )
+            .add_systems(
                 (
                     take_user_input,
-                    normalize_z_level::normalize_z_level,
                     destroy_peasant,
                     periodically_spawn_peasants,
                     camera_follows_charles,
@@ -47,16 +57,13 @@ impl Plugin for Charles1Plugin {
                     crown_loss_timer,
                     reclaim_crown.before(destroy_peasant),
                 )
-                    .in_set(OnUpdate(AppState::Charles1)),
+                    .in_set(OnUpdate(AppState::Charles1))
+                    .in_set(OnUpdate(Charles1State::Play)),
             )
             .add_systems(
-                (
-                    move_with_velocity,
-                    caluculate_falling_sprites.before(destroy_peasant),
-                    cap_peasant_velocity,
-                    raise_charles_1_arm,
-                )
+                (cap_peasant_velocity, raise_charles_1_arm)
                     .in_set(OnUpdate(AppState::Charles1))
+                    .in_set(OnUpdate(Charles1State::Play))
                     .in_schedule(CoreSchedule::FixedUpdate),
             );
     }

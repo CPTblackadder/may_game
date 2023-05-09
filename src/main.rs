@@ -16,7 +16,7 @@ use bevy_rapier2d::{prelude::*, render::RapierDebugRenderPlugin};
 use charles_1::Charles1Plugin;
 use charles_3::Charles3Plugin;
 use fading_sprite::fade_then_remove_fading_sprites;
-use ui::scene_changer_ui;
+use ui::{scene_changer_ui, SelectableState};
 
 #[derive(Component)]
 struct DeleteOnSceneChange;
@@ -24,6 +24,7 @@ struct DeleteOnSceneChange;
 fn main() {
     let mut app = App::new()
         .add_state::<AppState>()
+        .add_state::<Charles1State>()
         .insert_resource(FixedTime::new_from_secs(1.0 / 60.0))
         .add_plugins(DefaultPlugins.set(ImagePlugin {
             default_sampler: SamplerDescriptor {
@@ -41,7 +42,8 @@ fn main() {
         .add_plugin(DebugLinesPlugin::default())
         .add_plugin(bevy_inspector_egui::DefaultInspectorConfigPlugin) // adds default options and `InspectorEguiImpl`s
         .add_plugin(WorldInspectorPlugin::new())
-        .add_system(scene_changer_ui)
+        .add_system(scene_changer_ui::<AppState>)
+        .add_system(scene_changer_ui::<Charles1State>)
         .add_system(fade_then_remove_fading_sprites)
         .add_startup_system(common_start_up)
         // .add_system(cursor_position::cursor_position)
@@ -71,4 +73,40 @@ pub enum AppState {
     #[default]
     Charles1,
     Charles3,
+}
+
+impl SelectableState for AppState {
+    fn get_states() -> Vec<(Self, &'static str)> {
+        vec![
+            (Self::MainMenu, "Main Menu"),
+            (Self::Charles1, "Charles 1"),
+            (Self::Charles3, "Charles 3"),
+        ]
+    }
+
+    fn get_type_name() -> &'static str {
+        "AppState"
+    }
+}
+
+#[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default)]
+pub enum Charles1State {
+    #[default]
+    OpeningCinematic,
+    Play,
+    ClosingCinematic,
+}
+
+impl SelectableState for Charles1State {
+    fn get_states() -> Vec<(Self, &'static str)> {
+        vec![
+            (Self::OpeningCinematic, "Opening Cinematic"),
+            (Self::Play, "Play"),
+            (Self::ClosingCinematic, "Closing Cinematic"),
+        ]
+    }
+
+    fn get_type_name() -> &'static str {
+        "Charles1State"
+    }
 }

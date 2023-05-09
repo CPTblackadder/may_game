@@ -1,4 +1,4 @@
-use crate::bevy_tiling_background::*;
+use crate::{bevy_tiling_background::*, Charles1State};
 use bevy::{prelude::*, sprite::*};
 
 use self::{
@@ -33,6 +33,7 @@ fn load_charles_1(
     asset_server: Res<AssetServer>,
     mut required_kills: ResMut<TotalPeasantsKilled>,
     mut crown_lost: ResMut<CrownLost>,
+    mut next_state: ResMut<NextState<Charles1State>>,
 ) {
     let grass_image = asset_server.load("grass.png");
     commands.spawn((
@@ -49,6 +50,8 @@ fn load_charles_1(
         happy_head,
         shocked_head,
     });
+
+    next_state.set(Charles1State::OpeningCinematic);
 
     // king
     create_charles_1(&mut commands, &asset_server);
