@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 use bevy_rapier2d::prelude::*;
@@ -12,12 +14,9 @@ use super::{
 };
 
 #[derive(Component)]
-pub struct Charles1;
-
-impl Plugin for Charles1 {
-    fn build(&self, app: &mut App) {
-        app.add_systems((raise_charles_1_arm,).in_schedule(CoreSchedule::FixedUpdate));
-    }
+pub struct Charles1 {
+    pub crown: Entity,
+    pub has_crown: bool,
 }
 
 #[derive(Component, Default, Reflect)]
@@ -40,6 +39,7 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
     let texture_handle_torso: Handle<Image> = asset_server.load("charles_1_torso.png");
     let texture_handle_head: Handle<Image> = asset_server.load("charles_1_head.png");
     let texture_handle_bottom: Handle<Image> = asset_server.load("charles_1_bottom.png");
+    let texture_handle_crown: Handle<Image> = asset_server.load("crown.png");
     let shadow: Handle<Image> = asset_server.load("shadow.png");
 
     let mut charles_t = Transform::from_scale(Vec3 {
@@ -47,11 +47,25 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
         y: 0.2,
         z: 1.0,
     });
+
     charles_t.translation.z = 0.;
+    let crown_entity = commands
+        .spawn((
+            SpriteBundle {
+                texture: texture_handle_crown.clone(),
+                transform: Transform::from_xyz(-34., 170., 0.1).with_scale(Vec3::new(0.3, 0.3, 1.)),
+                ..Default::default()
+            },
+            Name::new("Crown Sprite"),
+        ))
+        .id();
 
     let charles_entity = commands
         .spawn((
-            Charles1,
+            Charles1 {
+                crown: crown_entity,
+                has_crown: true,
+            },
             CharlesVelocity::new(true),
             SpatialBundle {
                 transform: charles_t,
@@ -90,14 +104,16 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
                             },
                         ))
                         .with_children(|parent| {
-                            parent.spawn((
-                                SpriteBundle {
-                                    texture: texture_handle_head.clone(),
-                                    transform: Transform::from_xyz(-40.0, 250.0, 0.1),
-                                    ..Default::default()
-                                },
-                                Name::new("Head Sprite"),
-                            ));
+                            parent
+                                .spawn((
+                                    SpriteBundle {
+                                        texture: texture_handle_head.clone(),
+                                        transform: Transform::from_xyz(-40.0, 250.0, 0.1),
+                                        ..Default::default()
+                                    },
+                                    Name::new("Head Sprite"),
+                                ))
+                                .add_child(crown_entity);
                         });
                 });
             parent
@@ -171,7 +187,7 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
     ]);
 }
 
-fn raise_charles_1_arm(
+pub fn raise_charles_1_arm(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
     mut arms: Query<
@@ -188,11 +204,17 @@ fn raise_charles_1_arm(
     mut peasant_killed_event: EventWriter<PeasantKilled>,
     mut times_raised: Local<i32>,
     faces: Res<FaceResources>,
+    mut cooldown: Local<Timer>,
+    time: Res<Time>,
 ) {
     let charles_pos = charles.single().translation;
     let charles_pos = Vec2::new(charles_pos.x, charles_pos.y);
+    cooldown.tick(time.delta());
     for (mut transform, mut arm, child_entities) in arms.iter_mut() {
-        if keys.pressed(KeyCode::Space) && arm.state == Charles1ArmState::AtRest {
+        if keys.pressed(KeyCode::Space)
+            && arm.state == Charles1ArmState::AtRest
+            && cooldown.finished()
+        {
             arm.state = Charles1ArmState::Rising;
         }
 
@@ -203,9 +225,11 @@ fn raise_charles_1_arm(
             new_angle += 0.25;
         }
 
-        if new_angle >= 0.0 {
+        if new_angle > 0.0 {
             new_angle = 0.0;
             arm.state = Charles1ArmState::AtRest;
+            cooldown.set_duration(Duration::from_secs_f32(0.5));
+            cooldown.reset();
             *times_raised += 1;
         } else if new_angle <= -2.0 {
             new_angle = -2.0;
@@ -246,8 +270,7 @@ fn raise_charles_1_arm(
                                 let force_dir = p.1.translation;
                                 let force_dir =
                                     (Vec2::new(force_dir.x, force_dir.y) - charles_pos).normalize();
-                                println!("Forcing in: {}", force_dir);
-                                p.3.impulse = force_dir;
+                                p.3.impulse = force_dir * 3.;
                             }
                             PeasantDamage::Killed => peasant_killed_event.send(PeasantKilled(p.0)),
                             PeasantDamage::None => (),
@@ -261,19 +284,43 @@ fn raise_charles_1_arm(
 
 pub fn check_peasant_takes_charles(
     mut collision_events: EventReader<CollisionEvent>,
-    peasants: Query<Entity, With<Peasant>>,
-    mut next_state: ResMut<NextState<AppState>>,
+    mut peasants: Query<(&mut Peasant, &Transform, &mut ExternalImpulse)>,
+    mut sprites: Query<&mut Visibility, With<Sprite>>,
+    mut charles: Query<(&mut Charles1, &Transform)>,
 ) {
+    let (mut charles, c_t) = charles.get_single_mut().unwrap();
+
     for collision_event in collision_events.iter() {
-        println!("Received collision event: {:?}", collision_event);
         match collision_event {
             CollisionEvent::Started(e1, e2, _) => {
-                if let Ok(p) = peasants.get(*e1) {
-                    println!("E1 was peasant");
-                    next_state.set(AppState::Charles1);
-                } else if let Ok(p) = peasants.get(*e2) {
-                    println!("E2 was peasant");
-                    next_state.set(AppState::Charles1);
+                if let Ok((mut p, p_t, mut f)) = peasants.get_mut(*e1) {
+                    // Peasant steals crown
+                    if charles.has_crown {
+                        charles.has_crown = false;
+                        let mut crown_sprite = sprites.get_mut(charles.crown).unwrap();
+                        *crown_sprite = Visibility::Hidden;
+                        p.has_crown = true;
+                        let mut crown_sprite = sprites.get_mut(p.crown).unwrap();
+                        *crown_sprite = Visibility::Visible;
+                        // peasant position - charles position
+                        let force_dir = p_t.translation - c_t.translation;
+                        let force_dir = (Vec2::new(force_dir.x, force_dir.y)).normalize();
+                        f.impulse = force_dir * 3.;
+                    }
+                } else if let Ok((mut p, p_t, mut f)) = peasants.get_mut(*e2) {
+                    // Peasant steals crown
+                    if charles.has_crown {
+                        charles.has_crown = false;
+                        let mut crown_sprite = sprites.get_mut(charles.crown).unwrap();
+                        *crown_sprite = Visibility::Hidden;
+                        p.has_crown = true;
+                        let mut crown_sprite = sprites.get_mut(p.crown).unwrap();
+                        *crown_sprite = Visibility::Visible;
+                        // peasant position - charles position
+                        let force_dir = p_t.translation - c_t.translation;
+                        let force_dir = (Vec2::new(force_dir.x, force_dir.y)).normalize();
+                        f.impulse = force_dir * 3.;
+                    }
                 }
             }
             CollisionEvent::Stopped(_, _, _) => (),
@@ -289,7 +336,6 @@ enum PeasantDamage {
 
 fn calculate_peasant_damage(hit_id: i32, hit_by: &mut [i32; PEASANT_MAX_HEALTH]) -> PeasantDamage {
     let mut i = 0;
-    println!("{:?}", hit_by);
     while i < PEASANT_MAX_HEALTH && !(hit_by[i] == -1 || hit_by[i] == hit_id) {
         i += 1;
     }

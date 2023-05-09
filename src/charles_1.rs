@@ -6,6 +6,7 @@ use self::{
     cromwell::spawn_cromwell,
     kills_required::TotalPeasantsKilled,
     peasant::{spawn_peasant, FaceResources},
+    ui::CrownLost,
 };
 
 mod character;
@@ -24,13 +25,14 @@ pub struct Charles1Plugin;
 pub struct Shadow;
 
 const TOTAL_KILL_REQUIRED_TO_BEAT_LEVEL: usize = 50;
-const PEASANT_MAX_HEALTH: usize = 2;
+const PEASANT_MAX_HEALTH: usize = 1;
 
 fn load_charles_1(
     mut commands: Commands,
     mut back_materials: ResMut<Assets<BackgroundMaterial>>,
     asset_server: Res<AssetServer>,
     mut required_kills: ResMut<TotalPeasantsKilled>,
+    mut crown_lost: ResMut<CrownLost>,
 ) {
     let grass_image = asset_server.load("grass.png");
     commands.spawn((
@@ -56,6 +58,7 @@ fn load_charles_1(
     spawn_peasant(&mut commands, &asset_server, Vec2::new(100.0, -600.0));
 
     required_kills.0.clear();
+    crown_lost.0.reset();
 }
 
 #[derive(Component)]

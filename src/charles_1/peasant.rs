@@ -1,6 +1,7 @@
 use bevy::{
     prelude::{shape::Circle, *},
     sprite::MaterialMesh2dBundle,
+    utils::tracing::field::Visit,
 };
 use bevy_rapier2d::prelude::*;
 use rand::{rngs::ThreadRng, thread_rng, Rng};
@@ -23,6 +24,29 @@ pub struct FaceResources {
 pub struct Peasant {
     pub hit_by: [i32; PEASANT_MAX_HEALTH],
     pub head: Entity,
+    pub crown: Entity,
+    pub has_crown: bool,
+}
+
+pub fn reclaim_crown(
+    mut killed_events: EventReader<PeasantKilled>,
+    mut sprites: Query<&mut Visibility, With<Sprite>>,
+    mut charles: Query<&mut Charles1>,
+    mut peasants: Query<&mut Peasant>,
+) {
+    for k in killed_events.iter() {
+        if let Ok(mut p) = peasants.get_mut(k.0) {
+            if p.has_crown {
+                let mut charles = charles.get_single_mut().unwrap();
+                p.has_crown = false;
+                let mut crown_sprite: Mut<Visibility> = sprites.get_mut(p.crown).unwrap();
+                *crown_sprite = Visibility::Hidden;
+                charles.has_crown = true;
+                let mut crown_sprite = sprites.get_mut(charles.crown).unwrap();
+                *crown_sprite = Visibility::Visible;
+            }
+        }
+    }
 }
 
 pub fn destroy_peasant(
@@ -37,9 +61,7 @@ pub fn destroy_peasant(
     let mut rng: ThreadRng = rand::thread_rng();
     for k in killed_events.iter() {
         let p = k.0;
-        println!("Tying to Kill: {:?}", p);
         if let Ok((children, t)) = peasants.get(p) {
-            println!("Actually killing: {:?}", p);
             let floor = t.translation.y;
             apply_falling_sprite_rec(
                 floor,
@@ -111,6 +133,19 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
     let shadow: Handle<Image> = asset_server.load("shadow.png");
     // Preload shocked texture
     let _texture_handle_head: Handle<Image> = asset_server.load("peasant_head_shocked.png");
+    let texture_handle_crown: Handle<Image> = asset_server.load("crown.png");
+
+    let crown_entity = commands
+        .spawn((
+            SpriteBundle {
+                texture: texture_handle_crown.clone(),
+                transform: Transform::from_xyz(0., 250., 0.1).with_scale(Vec3::new(0.3, 0.3, 1.)),
+                visibility: Visibility::Hidden,
+                ..Default::default()
+            },
+            Name::new("Crown Sprite"),
+        ))
+        .id();
 
     let mut peasant_transform: Transform = Transform::from_translation(location.extend(0.0));
     peasant_transform.scale = Vec3::new(0.2, 0.2, 1.0);
@@ -120,12 +155,15 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
             transform: Transform::from_xyz(0.0, 200.0, 0.1),
             ..Default::default()
         },))
+        .add_child(crown_entity)
         .id();
     let peasant_entity = commands
         .spawn((
             Peasant {
                 hit_by: [-1; PEASANT_MAX_HEALTH],
                 head: head_entity,
+                crown: crown_entity,
+                has_crown: false,
             },
             // Velocity::new(false),
             SpatialBundle {
@@ -140,22 +178,22 @@ pub fn spawn_peasant(commands: &mut Commands, asset_server: &Res<AssetServer>, l
                 linvel: Vec2 { x: 0.0, y: 0.0 },
                 angvel: 0.0,
             },
-            AdditionalMassProperties::Mass(0.2),
+            AdditionalMassProperties::Mass(0.1),
             ExternalForce {
                 force: Vec2::new(0.0, 0.0),
-                torque: 1.0,
+                torque: 2.0,
             },
             ExternalImpulse {
                 impulse: Vec2::new(0.0, 0.0),
                 torque_impulse: 1.0,
             },
             Damping {
-                linear_damping: 0.8,
+                linear_damping: 0.6,
                 angular_damping: 1.0,
             },
             Friction::coefficient(0.0),
             Restitution {
-                coefficient: 0.00,
+                coefficient: 0.001,
                 combine_rule: CoefficientCombineRule::Min,
             },
             Ccd::enabled(),
@@ -281,6 +319,9 @@ fn spawn_a_peasant(
     asset_server: &Res<AssetServer>,
     number: usize,
 ) {
+    if peasants.iter().len() >= 30 {
+        return;
+    }
     fn points_too_close(a: Vec2, b: Vec2) -> bool {
         (a - b).length() < 300.
     }
@@ -335,23 +376,24 @@ pub fn spawn_a_peasant_command(
 }
 
 pub fn add_velocity_towards_charles(
-    mut peasants: Query<(&Transform, &mut ExternalForce), With<Peasant>>,
+    mut peasants: Query<(&Transform, &mut ExternalForce, &Peasant)>,
     charles: Query<&Transform, With<Charles1>>,
 ) {
     let charles = charles.single();
 
-    for (p_t, mut p_v) in peasants.iter_mut() {
+    for (p_t, mut p_v, p) in peasants.iter_mut() {
         // Determine direction towards charles
         let direction = charles.translation - p_t.translation;
         let direction = Vec2::new(direction.x, direction.y);
+        let modifier = if p.has_crown { -1. } else { 1. };
 
         // Set velocity towards charles
-        p_v.force = direction.normalize() * 1.5;
+        p_v.force = direction.normalize() * 2. * modifier;
     }
 }
 
 pub fn cap_peasant_velocity(mut peasants: Query<&mut Velocity, With<Peasant>>) {
     for mut p in peasants.iter_mut() {
-        p.linvel = p.linvel.clamp_length_max(2.0);
+        p.linvel = p.linvel.clamp_length_max(3.0);
     }
 }

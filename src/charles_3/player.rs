@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+use crate::DeleteOnSceneChange;
+
 #[derive(Component)]
 pub struct Player;
 
@@ -25,6 +27,7 @@ pub fn create_player(commands: &mut Commands, assets: &Res<AssetServer>) {
             Restitution::coefficient(0.0),
             RigidBody::Dynamic,
             GravityScale(0.1),
+            DeleteOnSceneChange,
             SpriteBundle {
                 transform: Transform::from_scale(Vec3 {
                     x: 0.1,
