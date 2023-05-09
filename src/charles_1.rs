@@ -93,20 +93,19 @@ fn process_userinput(
     pos_codes: Vec<KeyCode>,
     neg_codes: Vec<KeyCode>,
 ) -> Option<f32> {
-    let speed = 3.0;
     let mut val = None;
     for pos_key in pos_codes.iter() {
         if key_code.just_released(*pos_key) && !key_code.any_pressed(neg_codes.clone()) {
             return Some(0.0);
         } else if key_code.just_pressed(*pos_key) {
-            val = Some(speed);
+            val = Some(1.0);
         }
     }
     for neg_key in neg_codes.iter() {
         if key_code.just_released(*neg_key) && !key_code.any_pressed(pos_codes.clone()) {
             return Some(0.0);
         } else if key_code.just_pressed(*neg_key) {
-            val = Some(-speed);
+            val = Some(-1.0);
         }
     }
 
@@ -136,7 +135,7 @@ fn take_user_input(
 
 fn move_with_velocity(mut transforms: Query<(&mut Transform, &mut CharlesVelocity)>) {
     for (mut trans, mut vel) in transforms.iter_mut() {
-        trans.translation += vel.value.extend(0.0);
+        trans.translation += (vel.value.try_normalize().unwrap_or_default() * 3.6).extend(0.0);
         if vel.can_change_facing_direction {
             if vel.value.x < 0. && vel.facing == FacingDirection::Right {
                 vel.facing = FacingDirection::Left;
