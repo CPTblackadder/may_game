@@ -2,7 +2,9 @@
 
 # Resources:
 https://bevy-cheatbook.github.io/platforms/wasm.html
+
 https://bevy-cheatbook.github.io/platforms/wasm/gh-pages.html
+
 https://trunkrs.dev/
 
 
