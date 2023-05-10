@@ -1,11 +1,9 @@
 use bevy::{
-    prelude::{shape::Circle, *},
-    sprite::MaterialMesh2dBundle,
-    utils::tracing::field::Visit,
+    prelude::{*},
 };
 use bevy_rapier2d::prelude::*;
 use rand::{rngs::ThreadRng, thread_rng, Rng};
-use std::{default, f32::consts::PI};
+use std::{f32::consts::PI};
 
 use crate::fading_sprite::FadingSprite;
 
@@ -80,10 +78,10 @@ pub fn destroy_peasant(
 
 fn apply_falling_sprite_rec(
     floor: f32,
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     children: &Children,
     parent_child: &Query<&Children>,
-    mut sprites: &mut Query<(Entity, &mut Handle<Image>), (With<Sprite>, Without<Shadow>)>,
+    sprites: &mut Query<(Entity, &mut Handle<Image>), (With<Sprite>, Without<Shadow>)>,
     images: &Res<Assets<Image>>,
     rng: &mut ThreadRng,
     face_res: &Res<FaceResources>,

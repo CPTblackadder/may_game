@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::{prelude::ReflectInspectorOptions, InspectorOptions};
+
 
 #[derive(Reflect, Component, Debug, Default)]
 #[reflect(Component)]

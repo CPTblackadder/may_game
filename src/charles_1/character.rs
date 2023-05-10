@@ -1,10 +1,10 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_prototype_debug_lines::DebugLines;
+
 use bevy_rapier2d::prelude::*;
 
-use crate::AppState;
+
 
 use super::{
     kills_required::PeasantKilled,
@@ -188,7 +188,7 @@ pub fn create_charles_1(commands: &mut Commands, asset_server: &Res<AssetServer>
 }
 
 pub fn raise_charles_1_arm(
-    mut commands: Commands,
+    _commands: Commands,
     keys: Res<Input<KeyCode>>,
     mut arms: Query<
         (&mut Transform, &mut Charles1Arm, &Children),
@@ -196,9 +196,9 @@ pub fn raise_charles_1_arm(
     >,
     mut peasants: Query<
         (Entity, &Transform, &mut Peasant, &mut ExternalImpulse),
-        (Without<Charles1Arm>),
+        Without<Charles1Arm>,
     >,
-    mut peasant_heads: Query<&mut Handle<Image>, (Without<Charles1Arm>)>,
+    mut peasant_heads: Query<&mut Handle<Image>, Without<Charles1Arm>>,
     charles: Query<&Transform, With<Charles1>>,
     global_transforms: Query<&GlobalTransform>,
     mut peasant_killed_event: EventWriter<PeasantKilled>,

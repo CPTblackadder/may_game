@@ -1,4 +1,4 @@
-use bevy::{prelude::*, sprite::Sprite, utils::Instant};
+use bevy::{prelude::*, sprite::Sprite};
 
 #[derive(Component)]
 pub struct FadingSprite {

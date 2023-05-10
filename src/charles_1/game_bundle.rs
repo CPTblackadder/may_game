@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{despawn_all, AppState, DeleteOnSceneChange};
 
 use super::{
-    character::{check_peasant_takes_charles, raise_charles_1_arm, Charles1, Charles1Arm},
+    character::{check_peasant_takes_charles, raise_charles_1_arm, Charles1Arm},
     falling_sprite::{caluculate_falling_sprites, FallingSprite},
     kills_required::{track_kills, PeasantKilled, TotalPeasantsKilled},
     peasant::{

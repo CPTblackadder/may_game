@@ -10,19 +10,19 @@ use bevy::{
     prelude::*,
     render::render_resource::{AddressMode, SamplerDescriptor},
 };
-use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
-use bevy_prototype_debug_lines::DebugLinesPlugin;
-use bevy_rapier2d::{prelude::*, render::RapierDebugRenderPlugin};
+use bevy_inspector_egui::{bevy_egui::EguiPlugin};
+
+use bevy_rapier2d::{prelude::*};
 use charles_1::Charles1Plugin;
 use charles_3::Charles3Plugin;
 use fading_sprite::fade_then_remove_fading_sprites;
-use ui::scene_changer_ui;
+
 
 #[derive(Component)]
 struct DeleteOnSceneChange;
 
 fn main() {
-    let mut app = App::new()
+    let _app = App::new()
         .add_state::<AppState>()
         .insert_resource(FixedTime::new_from_secs(1.0 / 60.0))
         .add_plugins(DefaultPlugins.set(ImagePlugin {

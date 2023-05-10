@@ -20,6 +20,6 @@ pub fn normalize_z_level(
     // Move z levels between 1.0 - 990.0 from y values of -50,000.0 - 50,000.0
 
     for mut t in top_transforms.iter_mut() {
-        t.translation.z = (991.0 - map_range((-50000., 50000.), (1., 990.), t.translation.y));
+        t.translation.z = 991.0 - map_range((-50000., 50000.), (1., 990.), t.translation.y);
     }
 }

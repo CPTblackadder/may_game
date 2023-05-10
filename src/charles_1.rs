@@ -1,9 +1,8 @@
 use crate::bevy_tiling_background::*;
-use bevy::{prelude::*, sprite::*};
+use bevy::{prelude::*};
 
 use self::{
     character::{create_charles_1, Charles1},
-    cromwell::spawn_cromwell,
     kills_required::TotalPeasantsKilled,
     peasant::{spawn_peasant, FaceResources},
     ui::CrownLost,
