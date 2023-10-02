@@ -11,3 +11,6 @@ To compile and run a web-based version, use `CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN
     - This needs to install to somewhere on your `PATH`. Consider adding e.g. `--root=$HOME/.local`.
 
 See [docs](https://bevy-cheatbook.github.io/platforms/wasm.html) for more. Note that the suggested addition of `runner` to `Cargo.toml` doesn't work, so we use the `CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER`, as seen above.
+
+# Play the game
+https://cptblackadder.github.io/may_game/
